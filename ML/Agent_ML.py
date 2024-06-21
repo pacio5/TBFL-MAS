@@ -2,7 +2,8 @@ from spade.agent import Agent
 from spade.behaviour import *
 import spade
 import config
-from Model import Model
+from Model_with_Neuron import Model
+from Model_with_Layer import MLP
 from Layers.Dense import Dense
 import dataset
 
@@ -13,7 +14,7 @@ hidden_layers = []
 dataset.walk_to_the_right_directory()
 X_train, Y_train = dataset.prepare_train(3000, number_of_epochs)
 X_test, Y_test = dataset.prepare_test(3000, number_of_epochs)
-learning_rate=0.1
+learning_rate = 0.1
 
 
 class Agent_ML(FSMBehaviour):
@@ -29,10 +30,11 @@ class setup_state(State):
     async def run(self):
         print("-    This is the setup state")
         global model
-        hidden_layers.append(Dense(size=[200], learning_rate=learning_rate))
-        hidden_layers.append(Dense(size=[200], learning_rate=learning_rate))
+        """hidden_layers.append(Dense(size=[10], learning_rate=learning_rate))
+        hidden_layers.append(Dense(size=[10], learning_rate=learning_rate))
         model = Model([764], hidden_layers, [1], "sigmoid", learning_rate_output=learning_rate)
-        model.build_model()
+        model.build_model()"""
+        model = MLP()
 
         self.set_next_state(config.TRAIN_STATE)
 

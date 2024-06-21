@@ -19,7 +19,7 @@ class Model:
         self.accuracies = []
         self.precisions = []
         self.recalls = []
-        self.f1s = []
+        self.f1_scores = []
 
     def build_model(self):
         self.layers[0].layer_after = self.layers[1]
@@ -136,12 +136,12 @@ class Model:
             precision_score(test_outputs, self.predictions, average="weighted", labels=np.unique(self.predictions)))
         self.recalls.append(
             recall_score(test_outputs, self.predictions, average="weighted", labels=np.unique(self.predictions)))
-        self.f1s.append(
+        self.f1_scores.append(
             f1_score(test_outputs, self.predictions, average="weighted", labels=np.unique(self.predictions)))
 
     def evaluate(self):
         df = pd.DataFrame(
-            {'accuracy': self.accuracies, 'precision': self.precisions, 'recall': self.recalls, 'f1': self.f1s},
+            {'accuracy': self.accuracies, 'precision': self.precisions, 'recall': self.recalls, 'f1': self.f1_scores},
             index=np.arange(len(self.accuracies)))
         df.plot(title="Metrics Plot")
         plt.show()

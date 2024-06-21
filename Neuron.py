@@ -27,7 +27,7 @@ class Neuron:
             self.error = 0
             if len(self.output_connections) != 0:
                 for i in range(len(self.output_connections)):
-                    self.error += self.output_connections[i].weight * self.output_connections[i].end.output
+                    self.error += self.output_connections[i].weight * self.output_connections[i].end.error
             else:
                 self.error = x - self.output
 
