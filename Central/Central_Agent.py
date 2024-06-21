@@ -8,12 +8,11 @@ from spade.behaviour import *
 import spade
 from torch import nn
 import config
-from models import MNIST_Model
+from models import CNN
 import dataset
-from torchvision.transforms import ToTensor, Compose
 
 
-class Agent_ML(FSMBehaviour):
+class Central_Agent(FSMBehaviour):
     async def on_start(self):
         print(f"FSM starting at initial state {self.current_state}")
 
@@ -25,7 +24,7 @@ class Agent_ML(FSMBehaviour):
 class setup_state(State):
     async def run(self):
         print("-    This is the setup state")
-        global all_accuracies, all_f1_scores, all_gradients, all_labels, all_precisions, all_predictions, all_recalls, batch_size, criterion, device, epoch, global_epochs, learning_rate, local_epochs, model, optimizer, X_train, Y_train, X_test, Y_test
+        global all_accuracies, all_f1_scores, all_gradients, all_labels, all_precisions, all_predictions, all_recalls, all_weights, batch_size, criterion, device, epoch, global_epochs, learning_rate, local_epochs, model, optimizer, X_train, Y_train, X_test, Y_test
         all_accuracies = []
         all_f1_scores = []
         all_gradients = []
@@ -33,14 +32,15 @@ class setup_state(State):
         all_precisions = []
         all_predictions = []
         all_recalls = []
+        all_weights = []
         batch_size = 3000
         criterion = nn.CrossEntropyLoss()
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         epoch = 0
-        global_epochs = 3
+        global_epochs = 10
         learning_rate = 0.1
-        local_epochs = 2
-        model = MNIST_Model(10)
+        local_epochs = 5
+        model = CNN(10)
         optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
         dataset.walk_to_the_right_directory()
         X_train, Y_train = dataset.prepare_train(batch_size, global_epochs, local_epochs, (batch_size, 28, 28))
@@ -52,7 +52,7 @@ class setup_state(State):
 class train_state(State):
     async def run(self):
         print("-    This is the train state")
-        global device, epoch, model, X_train, Y_train
+        global all_gradients, device, epoch, model, X_train, Y_train
         model.train()
 
         for images, labels in zip(X_train[epoch], Y_train[epoch]):
@@ -62,12 +62,12 @@ class train_state(State):
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
             loss = criterion(outputs, labels)
-            # print(model.fc1[0].weight.grad)
             optimizer.zero_grad()
             loss.backward()
-            # print(model.fc1[0].weight.grad)
+            all_gradients.append(optimizer.state_dict())
             optimizer.step()
 
+        all_weights.append(model.state_dict())
         self.set_next_state(config.PREDICT_STATE)
 
 
@@ -126,7 +126,7 @@ class evaluate_state(State):
 class Server(Agent):
     async def setup(self):
         print("Agent {} running".format(self.name))
-        fsm = Agent_ML()
+        fsm = Central_Agent()
 
         fsm.add_state(name=config.SETUP_STATE, state=setup_state(), initial=True)
         fsm.add_state(name=config.TRAIN_STATE, state=train_state())
@@ -140,7 +140,27 @@ class Server(Agent):
         fsm.add_transition(config.COLLECT_METRICS_STATE, config.TRAIN_STATE)
         fsm.add_transition(config.COLLECT_METRICS_STATE, config.EVALUATE_STATE)
 
+        self.add_behaviour(self.ServerBehaviour())
         self.add_behaviour(fsm)
+
+    class ServerBehaviour(OneShotBehaviour):
+        def on_available(self, jid, stanza):
+            print("[{}] Agent {} is available.".format(self.agent.name, jid.split("@")[0]))
+
+        def on_subscribed(self, jid):
+            print("[{}] Agent {} has accepted the subscription.".format(self.agent.name, jid.split("@")[0]))
+            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
+
+        def on_subscribe(self, jid):
+            print("[{}] Agent {} asked for subscription. Let's approve it.".format(self.agent.name, jid.split("@")[0]))
+            self.presence.approve(jid)
+            self.presence.subscribe(jid)
+
+        async def run(self):
+            self.presence.set_available()
+            self.presence.on_subscribe = self.on_subscribe
+            self.presence.on_subscribed = self.on_subscribed
+            self.presence.on_available = self.on_available
 
 
 async def main():
