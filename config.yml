@@ -1,0 +1,15 @@
+server:
+  set_up: "SETUP_STATE_SERVER"
+  train: "TRAIN_STATE"
+  predict: "PREDICT_STATE"
+  collect_metrics: "COLLECT_METRICS_STATE"
+  plot_metrics: "PLOT_METRICS_STATE"
+  receive: "RECEIVE_STATE_SERVER"
+  avg: "AVG_STATE_SERVER"
+  send: "SEND_STATE_SERVER"
+
+client:
+  set_up: "SETUP_STATE_CLIENT"
+  receive: "RECEIVE_STATE_CLIENT"
+  train: "TRAIN_STATE_CLIENT"
+  send: "SEND_STATE_CLIENT"

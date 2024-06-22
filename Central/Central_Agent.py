@@ -7,9 +7,12 @@ from spade.agent import Agent
 from spade.behaviour import *
 import spade
 from torch import nn
-import config
 from models import CNN
 import dataset
+import yaml
+
+with open("../config.yml", "rt") as config_file:
+    config = yaml.safe_load(config_file)
 
 
 class Central_Agent(FSMBehaviour):
@@ -46,13 +49,13 @@ class setup_state(State):
         X_train, Y_train = dataset.prepare_train(batch_size, global_epochs, local_epochs, (batch_size, 28, 28))
         X_test, Y_test = dataset.prepare_test(batch_size, global_epochs, local_epochs, (batch_size, 28, 28))
         model.to(device)
-        self.set_next_state(config.TRAIN_STATE)
+        self.set_next_state(config["server"]["train"])
 
 
 class train_state(State):
     async def run(self):
+        global all_gradients, all_weights, epoch, model, optimizer, X_train, Y_train
         print("-    This is the train state")
-        global all_gradients, device, epoch, model, X_train, Y_train
         model.train()
 
         for images, labels in zip(X_train[epoch], Y_train[epoch]):
@@ -68,17 +71,38 @@ class train_state(State):
             optimizer.step()
 
         all_weights.append(model.state_dict())
-        self.set_next_state(config.PREDICT_STATE)
 
+        self.set_next_state(config["server"]["predict"])
+
+
+class send_state(State):
+    async def run(self):
+        global model
+
+        self.set_next_state(config["server"]["receive"])
+
+
+class receive_state(State):
+    async def run(self):
+        global model
+
+        self.set_next_state(config["server"]["avg"])
+
+
+class avg_state(State):
+    async def run(self):
+        global model
+
+        self.set_next_state(config["server"]["predict"])
 
 class predict_state(State):
     async def run(self):
+        global all_labels, all_predictions, epoch, model, X_test, Y_test
         print("-    This is the predict state")
-        global all_labels, all_predictions, criterion, device, epoch, model, X_train, Y_train
         model.eval()
 
         with torch.no_grad():
-            for images, labels in zip(X_train[epoch], Y_train[epoch]):
+            for images, labels in zip(X_test[epoch], Y_test[epoch]):
                 images = torch.from_numpy(images)
                 labels = torch.from_numpy(labels)
                 labels = labels.type(torch.LongTensor)
@@ -88,13 +112,13 @@ class predict_state(State):
                 all_predictions.extend(predictions.tolist())
                 all_labels.extend(labels.tolist())
 
-        self.set_next_state(config.COLLECT_METRICS_STATE)
+        self.set_next_state(config["server"]["collect_metrics"])
 
 
 class collect_metrics_state(State):
     async def run(self):
+        global all_accuracies, all_f1_scores, all_labels, all_precisions, all_predictions, all_recalls, epoch, global_epochs
         print("-    This is the collect metrics state")
-        global all_accuracies, all_f1_scores, all_labels, all_precisions, all_predictions, all_recalls, epoch, global_epochs, model
 
         all_accuracies.append(accuracy_score(all_labels, all_predictions))
         all_precisions.append(
@@ -107,15 +131,15 @@ class collect_metrics_state(State):
         epoch += 1
 
         if global_epochs > epoch:
-            self.set_next_state(config.TRAIN_STATE)
+            self.set_next_state(config["server"]["train"])
         else:
-            self.set_next_state(config.EVALUATE_STATE)
+            self.set_next_state(config["server"]["plot_metrics"])
 
 
-class evaluate_state(State):
+class plot_metrics_state(State):
     async def run(self):
-        print("-    This is the evaluate state")
         global all_accuracies, all_f1_scores, all_precisions, all_recalls
+        print("-    This is the evaluate state")
         df = pd.DataFrame(
             {'accuracy': all_accuracies, 'precision': all_precisions, 'recall': all_recalls, 'f1': all_f1_scores},
             index=np.arange(len(all_accuracies)))
@@ -123,22 +147,30 @@ class evaluate_state(State):
         plt.show()
 
 
+
 class Server(Agent):
     async def setup(self):
         print("Agent {} running".format(self.name))
         fsm = Central_Agent()
 
-        fsm.add_state(name=config.SETUP_STATE, state=setup_state(), initial=True)
-        fsm.add_state(name=config.TRAIN_STATE, state=train_state())
-        fsm.add_state(name=config.PREDICT_STATE, state=predict_state())
-        fsm.add_state(name=config.COLLECT_METRICS_STATE, state=collect_metrics_state())
-        fsm.add_state(name=config.EVALUATE_STATE, state=evaluate_state())
+        fsm.add_state(name=config["server"]["set_up"], state=setup_state(), initial=True)
+        fsm.add_state(name=config["server"]["train"], state=train_state())
+        fsm.add_state(name=config["server"]["send"], state=send_state())
+        fsm.add_state(name=config["server"]["receive"], state=receive_state())
+        fsm.add_state(name=config["server"]["avg"], state=avg_state())
+        fsm.add_state(name=config["server"]["predict"], state=predict_state())
+        fsm.add_state(name=config["server"]["collect_metrics"], state=collect_metrics_state())
+        fsm.add_state(name=config["server"]["plot_metrics"], state=plot_metrics_state())
 
-        fsm.add_transition(config.SETUP_STATE, config.TRAIN_STATE)
-        fsm.add_transition(config.TRAIN_STATE, config.PREDICT_STATE)
-        fsm.add_transition(config.PREDICT_STATE, config.COLLECT_METRICS_STATE)
-        fsm.add_transition(config.COLLECT_METRICS_STATE, config.TRAIN_STATE)
-        fsm.add_transition(config.COLLECT_METRICS_STATE, config.EVALUATE_STATE)
+        fsm.add_transition(config["server"]["set_up"], config["server"]["train"])
+        fsm.add_transition(config["server"]["set_up"], config["server"]["send"])
+        fsm.add_transition(config["server"]["train"], config["server"]["predict"])
+        fsm.add_transition(config["server"]["send"], config["server"]["receive"])
+        fsm.add_transition(config["server"]["receive"], config["server"]["avg"])
+        fsm.add_transition(config["server"]["avg"], config["server"]["predict"])
+        fsm.add_transition(config["server"]["predict"], config["server"]["collect_metrics"])
+        fsm.add_transition(config["server"]["collect_metrics"], config["server"]["train"])
+        fsm.add_transition(config["server"]["collect_metrics"], config["server"]["plot_metrics"])
 
         self.add_behaviour(self.ServerBehaviour())
         self.add_behaviour(fsm)
