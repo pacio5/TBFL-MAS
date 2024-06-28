@@ -4,6 +4,7 @@ server:
   predict: "PREDICT_STATE"
   collect_metrics: "COLLECT_METRICS_STATE"
   plot_metrics: "PLOT_METRICS_STATE"
+  control_agents_present: "CONTROL_AGENT_PRESENT_SERVER"
   receive: "RECEIVE_STATE_SERVER"
   avg: "AVG_STATE_SERVER"
   send: "SEND_STATE_SERVER"
@@ -13,3 +14,13 @@ client:
   receive: "RECEIVE_STATE_CLIENT"
   train: "TRAIN_STATE_CLIENT"
   send: "SEND_STATE_CLIENT"
+  jid_server: "test_server@localhost"
+
+learning_configuration:
+  batch_size_training: 300
+  batch_size_testing: 300
+  global_epochs: 3
+  learning_rate: 0.01
+  local_epochs: 5
+  number_of_clients: 10
+  FL: True
