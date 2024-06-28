@@ -53,8 +53,8 @@ def prepare_train():
                 images = images.reshape(image_shape_training)
             images = np.expand_dims(images, axis=1)
 
-            x_train["i"] = images
-            y_train["i"] = labels
+            x_train[str(i)] = images
+            y_train[str(i)] = labels
 
     else:
         x_train = [[0] * local_epochs for i in range(global_epochs)]

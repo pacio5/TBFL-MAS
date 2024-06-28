@@ -5,7 +5,7 @@ with open(str(paths.get_project_root()) + "\config.yml", "rt") as config_file:
     config = yaml.safe_load(config_file)
 
 
-class FSMAgentClient(Agent):
+class Client(Agent):
     async def setup(self):
         fsm = ExtendedFSMBehaviour()
         fsm.add_state(name=config["client"]["set_up"], state=set_up_state(), initial=True)

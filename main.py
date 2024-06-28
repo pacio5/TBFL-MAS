@@ -1,7 +1,7 @@
 import spade
 import yaml
-from Agents.ClientAgent import FSMAgentClient
-from Central.Central_Agent import Server
+from Agents.Client_Agent import Client
+from Agents.Central_Agent import Server
 import paths
 
 with open(str(paths.get_project_root()) + "\config.yml", "rt") as config_file:
@@ -14,14 +14,14 @@ async def main():
     server = Server(config["client"]["jid_server"], "test_server")
     agents["server"] = server
     await server.start(auto_register=True)
-
-    for i in range(number_of_clients):
-        #name_of_client = "client_" + str(uuid.uuid4())[:6]
-        name_of_client = "client" + str(i)
-        print("agent: " + name_of_client)
-        agent = FSMAgentClient(name_of_client + "@localhost", name_of_client)
-        agents[name_of_client] = agent
-        await agent.start(auto_register=True)
+    if config["learning_configuration"]["FL"]:
+        for i in range(number_of_clients):
+            #name_of_client = "client_" + str(uuid.uuid4())[:6]
+            name_of_client = "client" + str(i)
+            print("agent: " + name_of_client)
+            agent = Client(name_of_client + "@localhost", name_of_client)
+            agents[name_of_client] = agent
+            await agent.start(auto_register=True)
 
 
 

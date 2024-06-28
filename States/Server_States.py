@@ -108,8 +108,6 @@ class train_state(State):
 
 class control_agents_present_state(State):
     async def run(self):
-        for item in self.agent.presence.get_contacts().items():
-            print(item)
         await asyncio.sleep(30)
         if config["learning_configuration"]["number_of_clients"] > len(list(filter(lambda x: ("presence" in x[1]), self.agent.presence.get_contacts().items()))):
             self.set_next_state(config["server"]["control_agents_present"])
