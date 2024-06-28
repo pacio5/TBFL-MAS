@@ -93,7 +93,7 @@ class train_state(State):
         model.train()
 
         # train the local model
-        for images, labels in tzip(x_train.values(), y_train.values()):
+        for images, labels in tzip(x_train.values(), y_train.values(), desc="training local model"):
             images = torch.from_numpy(images)
             labels = torch.from_numpy(labels)
             labels = labels.type(torch.LongTensor)

@@ -93,7 +93,7 @@ class train_state(State):
         model.train()
 
         # train the global model
-        for images, labels in tzip(x_train[epoch], y_train[epoch]):
+        for images, labels in tzip(x_train[epoch], y_train[epoch], desc="training global model"):
             images = torch.from_numpy(images)
             labels = torch.from_numpy(labels)
             labels = labels.type(torch.LongTensor)
@@ -221,7 +221,7 @@ class predict_state(State):
 
         # calculate predictions
         with torch.no_grad():
-            for images, labels in tzip(x_test[epoch], y_test[epoch]):
+            for images, labels in tzip(x_test[epoch], y_test[epoch], desc="predict with global model"):
                 images = torch.from_numpy(images)
                 labels = torch.from_numpy(labels)
                 labels = labels.type(torch.LongTensor)
@@ -299,6 +299,5 @@ class plot_metrics_state(State):
         df = pd.DataFrame(
             {'accuracy': all_accuracies, 'precision': all_precisions, 'recall': all_recalls, 'f1': all_f1_scores},
             index=np.arange(len(all_accuracies)))
-        df.plot(title="Metrics Plot")
+        df.plot(title="performance metrics", xlabel="global epochs", ylabel="percentage")
         plt.show()
-        #labelling the plot
