@@ -1,5 +1,7 @@
+from Behaviours.ExtendedFSM import *
+from Behaviours.Presence import *
+from spade.agent import Agent
 from States.Server_States import *
-from Behaviours import *
 
 with open(str(paths.get_project_root()) + "\config.yml", "rt") as config_file:
     config = yaml.safe_load(config_file)
@@ -19,6 +21,7 @@ class Server(Agent):
         fsm.add_state(name=config["server"]["predict"], state=predict_state())
         fsm.add_state(name=config["server"]["collect_metrics"], state=collect_metrics_state())
         fsm.add_state(name=config["server"]["plot_metrics"], state=plot_metrics_state())
+        fsm.add_state(name=config["server"]["finish"], state=finish_state())
 
         fsm.add_transition(config["server"]["set_up"], config["server"]["train"])
         fsm.add_transition(config["server"]["train"], config["server"]["predict"])
@@ -32,6 +35,7 @@ class Server(Agent):
         fsm.add_transition(config["server"]["collect_metrics"], config["server"]["send"])
         fsm.add_transition(config["server"]["collect_metrics"], config["server"]["train"])
         fsm.add_transition(config["server"]["collect_metrics"], config["server"]["plot_metrics"])
+        fsm.add_transition(config["server"]["plot_metrics"],config["server"]["finish"])
 
         self.add_behaviour(PresenceBehaviour())
         self.add_behaviour(fsm)

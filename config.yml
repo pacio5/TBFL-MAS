@@ -8,6 +8,7 @@ server:
   receive: "RECEIVE_STATE_SERVER"
   avg: "AVG_STATE_SERVER"
   send: "SEND_STATE_SERVER"
+  finish: "FINISH_STATE_SERVER"
 
 client:
   set_up: "SETUP_STATE_CLIENT"
@@ -15,12 +16,22 @@ client:
   train: "TRAIN_STATE_CLIENT"
   send: "SEND_STATE_CLIENT"
   jid_server: "test_server@localhost"
+  finish: "FINISH_STATE_CLIENT"
 
 learning_configuration:
-  batch_size_training: 300
+  ML:
+    batch_size_training: 300
   batch_size_testing: 300
-  global_epochs: 3
+  dataset_training: "\\fashion dataset\\fashion-mnist_train.csv"
+  dataset_testing: "\\fashion dataset\\fashion-mnist_test.csv"
+  global_epochs: 10
   learning_rate: 0.01
   local_epochs: 5
-  number_of_clients: 10
-  FL: True
+  wait_until_accuracy_is_reached: False
+  accuracy_treshold: 0.5
+  FL:
+    algorithm: "p-Fed"
+    number_of_clients: 3
+    batch_size_training_per_client: [200, 3500, 100, 500, 1000, 4000, 3000, 2500, 1400, 600]
+    number_of_classes_per_client: [8, 7, 5, 6, 7, 9, 6, 4, 7, 2]
+  FL_or_ML: "FL"
