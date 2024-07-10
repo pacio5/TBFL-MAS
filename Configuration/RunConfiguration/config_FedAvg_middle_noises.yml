@@ -1,0 +1,2 @@
+algorithm: "FedAvg"
+standard_deviation_for_noises: 2

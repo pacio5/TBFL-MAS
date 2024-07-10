@@ -1,0 +1,3 @@
+algorithm: "FedAvg"
+iid: 0
+standard_deviation_for_noises: 3

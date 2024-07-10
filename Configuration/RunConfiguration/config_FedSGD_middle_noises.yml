@@ -1,0 +1,2 @@
+algorithm: "FedSGD"
+standard_deviation_for_noises: 2
