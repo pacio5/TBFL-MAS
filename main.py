@@ -14,15 +14,12 @@ import yaml
 fsm_logger = logging.getLogger("FSM")
 agents = {}
 
-async def main(config_file=""):
+async def main(launch_config={}):
     args = Argparser.args_parser()
     batch_size_options = config["options"]["batch_size_per_class"]
-    if config_file != "":
-        args.config_file = config_file
 
     opt = vars(args)
-    yaml_conf = yaml.load(open(args.config_file), Loader=yaml.FullLoader)
-    opt.update(yaml_conf)
+    opt.update(launch_config)
 
     batch_size_per_classes_server = {}
     Data.prepare_batch_sizes_per_classes(args, batch_size_options,
@@ -34,7 +31,7 @@ async def main(config_file=""):
     await server.start(auto_register=True)
     fsm_logger.info(args.jid_server + " is created")
     if args.algorithm != "ML":
-        for i in range(args.number_of_agents):
+        for i in range(args.number_of_client_agents):
             batch_size_per_classes = {}
             Data.prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, i * 13)
             # name_of_client = "client_" + str(uuid.uuid4())[:6]
@@ -45,43 +42,53 @@ async def main(config_file=""):
             await agent.start(auto_register=True)
             fsm_logger.info(name_of_client + " is created")
 
-    timer = 0
+    first = True
     while agents["server"].is_alive():
         try:
             await asyncio.sleep(1)
             # simulate new entry of an agent
-            if timer == 20 and args.new_entry_or_leave == "new entry":
+            if agents["server"].args.epoch == 2 and args.new_entry_or_leave == "new entry" and first:
                 batch_size_per_classes = {}
                 Data.prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, 20)
                 name_of_client = "client_" + str(uuid.uuid4())[:6]
-                print("agent: " + name_of_client)
                 agent = ClientAgent(name_of_client + "@localhost", name_of_client, args,
                                     batch_size_per_classes, 20, 30)
                 agents[name_of_client] = agent
                 await agent.start(auto_register=True)
                 fsm_logger.info(name_of_client + " is created")
+                first = False
             # simulate leave of an agent
-            elif timer == 35 and args.new_entry_or_leave == "leave":
+            elif agents["server"].args.epoch == 2 and args.new_entry_or_leave == "leave" and first:
                 agents["client0"].presence.unsubscribe(args.jid_server)
                 print("client0 leaves the MAS")
                 fsm_logger.info("client0 leaves the MAS")
-            timer += 1
+                first = False
         except KeyboardInterrupt:
             break
 
 async def multiple_mains():
-    path_to_files = str(Paths.get_project_root()) + "\\Configuration\\RunConfiguration\\"
-    for file in os.listdir(path_to_files):
-        await main(config_file=path_to_files + file)
-        print(file + " is done")
-
-
+    args = Argparser.args_parser()
+    path_to_learning_scenarios_config = str(Paths.get_project_root()) + "\\Configuration\\learning_scenarios_config.yml"
+    learning_scenarios_conf = yaml.load(open(path_to_learning_scenarios_config), Loader=yaml.FullLoader)
+    for learning_scenarios in args.launch_config:
+        for learning_scenario in learning_scenarios:
+            print("This run uses the learning scenario {}".format(learning_scenario))
+            await main(launch_config=learning_scenarios_conf["learning_scenarios"][learning_scenario])
+            print(learning_scenario + " is done")
 
 def plot():
+    args = Argparser.args_parser()
     for key in agents.keys():
-        print("plotting: " + key)
-        Metrics.plot_metrics(key, key, "test")
-
+        Metrics.plot_metrics(args, key, key, "test_acc")
+        Metrics.plot_metrics(args, key, key, "test_f1")
+        Metrics.plot_metrics(args, key, key, "test_pre")
+        Metrics.plot_metrics(args, key, key, "test_rec")
+        Metrics.plot_metrics(args, key, key, "loss")
+        for i in range(args.number_of_classes_in_dataset):
+            Metrics.plot_metrics(args, key, key, "f1_cla" + str(i))
+            Metrics.plot_metrics(args, key, key, "pre_cla" + str(i))
+            Metrics.plot_metrics(args, key, key, "rec_cla" + str(i))
+        Metrics.plot_metrics(args, key, key, "batch_sizes_per_classes")
 
 if __name__ == "__main__":
     spade.run(multiple_mains())

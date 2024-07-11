@@ -1,0 +1,234 @@
+learning_scenarios:
+  # default: first
+  ML: { }
+  # second
+  FedAvg: {
+    algorithm: "FedAvg"
+  }
+  # third
+  FedAvg_high_noises: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 3
+  }
+  # fourth
+  FedAvg_leave: {
+    algorithm: "FedAvg",
+    new_entry_or_leave: "leave"
+  }
+  # fifth
+  FedAvg_new_entry: {
+    algorithm: "FedAvg",
+    new_entry_or_leave: "new entry"
+  }
+  # sixth
+  FedAvg_threshold_accuracy: {
+    algorithm: "FedAvg",
+    wait_until_threshold_is_reached: "acc"
+  }
+  # seventh
+  FedAvg_5_global_epoch: {
+    algorithm: "FedAvg",
+    global_epoch: 5
+  }
+  # eight
+  FedAvg_non_IID: {
+    algorithm: "FedAvg",
+    iid: 0
+  }
+  # ninth
+  FedAvg_10_client_agents_non_IID: {
+    algorithm: "FedAvg",
+    number_of_client_agents: 10,
+    iid: 0
+  }
+  # tenth
+  FedSGD: {
+    algorithm: "FedSGD"
+  }
+  # eleven
+  FedSGD_non_IID: {
+    algorithm: "FedSGD",
+    iid: 0
+  }
+  # twelve
+  FedPER: {
+    algorithm: "FedPER"
+  }
+  # thirteen
+  FedPER_high_noises: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 3
+  }
+  # fourteen
+  FedPER_non_IID: {
+    algorithm: "FedPER",
+    iid: 0
+  }
+
+  # other FedAvg learning scenarios
+  FedAvg_low_noises: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 1
+  }
+
+  FedAvg_middle_noises: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 2
+  }
+
+  FedAvg_low_noises_non_IID: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 1,
+    iid: 0
+  }
+
+  FedAvg_middle_noises_non_IID: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 2,
+    iid: 0
+  }
+
+  FedAvg_high_noises_non_IID: {
+    algorithm: "FedAvg",
+    standard_deviation_for_noises: 3,
+    iid: 0
+  }
+
+  FedAvg_threshold_f1_score: {
+    algorithm: "FedAvg",
+    wait_until_threshold_is_reached: "f1"
+  }
+
+  FedAvg_threshold_precision: {
+    algorithm: "FedAvg",
+    wait_until_threshold_is_reached: "pre"
+  }
+
+  FedAvg_threshold_recall: {
+    algorithm: "FedAvg",
+    wait_until_threshold_is_reached: "rec"
+  }
+
+
+  # other FedSGD learning scenarios
+  FedSGD_low_noises: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 1
+  }
+
+  FedSGD_middle_noises: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 2
+  }
+
+  FedSGD_high_noises: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 3
+  }
+
+  FedSGD_leave: {
+    algorithm: "FedSGD",
+    new_entry_or_leave: "leave"
+  }
+
+  FedSGD_new_entry: {
+    algorithm: "FedSGD",
+    new_entry_or_leave: "new entry"
+  }
+
+  FedSGD_low_noises_non_IID: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 1,
+    iid: 0
+  }
+
+  FedSGD_middle_noises_non_IID: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 2,
+    iid: 0
+  }
+
+  FedSGD_high_noises_non_IID: {
+    algorithm: "FedSGD",
+    standard_deviation_for_noises: 3,
+    iid: 0
+  }
+
+  FedSGD_threshold_accuracy: {
+    algorithm: "FedSGD",
+    wait_until_threshold_is_reached: "acc"
+  }
+
+  FedSGD_threshold_f1_score: {
+    algorithm: "FedSGD",
+    wait_until_threshold_is_reached: "f1"
+  }
+
+  FedSGD_threshold_precision: {
+    algorithm: "FedSGD",
+    wait_until_threshold_is_reached: "pre"
+  }
+
+  FedSGD_threshold_recall: {
+    algorithm: "FedSGD",
+    wait_until_threshold_is_reached: "rec"
+  }
+
+  # other FedPER learning scenarios
+  FedPER_low_noises: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 1
+  }
+
+  FedPER_middle_noises: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 2
+  }
+
+  FedPER_leave: {
+    algorithm: "FedPER",
+    new_entry_or_leave: "leave"
+  }
+
+  FedPER_new_entry: {
+    algorithm: "FedPER",
+    new_entry_or_leave: "new entry"
+  }
+
+  FedPER_low_noises_non_IID: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 1,
+    iid: 0
+  }
+
+  FedPER_middle_noises_non_IID: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 2,
+    iid: 0
+  }
+
+  FedPER_high_noises_non_IID: {
+    algorithm: "FedPER",
+    standard_deviation_for_noises: 3,
+    iid: 0
+  }
+
+  FedPER_threshold_accuracy: {
+    algorithm: "FedPER",
+    wait_until_threshold_is_reached: "acc"
+  }
+
+  FedPER_threshold_f1_score: {
+    algorithm: "FedPER",
+    wait_until_threshold_is_reached: "f1"
+  }
+
+  FedPER_threshold_precision: {
+    algorithm: "FedPER",
+    wait_until_threshold_is_reached: "pre"
+  }
+
+  FedPER_threshold_recall: {
+    algorithm: "FedPER",
+    wait_until_threshold_is_reached: "rec"
+  }

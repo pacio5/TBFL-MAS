@@ -11,7 +11,7 @@ import uuid
 logger = logging.getLogger("SubscriptionBehaviour")
 
 
-class Client(Agent):
+class ClientAgent(Agent):
     def __init__(self, client_name, client_password, server_name):
         super().__init__(client_name, client_password)
         self.server_name = server_name
@@ -20,7 +20,7 @@ class Client(Agent):
         print("Agent {} running".format(self.name))
         self.add_behaviour(SubscriptionBehaviour(self.server_name + "@localhost"))
 
-class Server(Agent):
+class ServerAgent(Agent):
     async def setup(self):
         print("Agent {} running".format(self.name))
         self.add_behaviour(SubscriptionBehaviour())
@@ -28,13 +28,13 @@ class Server(Agent):
 async def main():
     server_name = "server_" + str(uuid.uuid4())[:6]
     server_password = str(uuid.uuid4())[:12]
-    server = Server(server_name + "@localhost", server_password)
+    server = ServerAgent(server_name + "@localhost", server_password)
     await server.start(auto_register=True)
     logger.info(server_name + " is created")
 
     client_name = "client_" + str(uuid.uuid4())[:6]
     client_password = str(uuid.uuid4())[:12]
-    client = Client(client_name + "@localhost", client_password, server_name)
+    client = ClientAgent(client_name + "@localhost", client_password, server_name)
     await client.start(auto_register=True)
     logger.info(client_name + " is created")
 

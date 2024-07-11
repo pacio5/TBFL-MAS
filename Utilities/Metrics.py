@@ -5,7 +5,8 @@ import pandas as pd
 from Utilities.Paths import Paths
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
-class Metrics():
+
+class Metrics:
     @staticmethod
     def calculate_f1_score_per_classes(all_labels, all_predictions, epoch, f1_scores_per_classes):
         f1_scores = f1_score(all_labels, all_predictions, average=None, zero_division=0)
@@ -17,7 +18,8 @@ class Metrics():
                           all_test_precisions, all_test_recalls, epoch):
         all_test_accuracies[str(epoch)] = accuracy_score(all_labels, all_predictions)
         all_test_f1_scores[str(epoch)] = f1_score(all_labels, all_predictions, average="weighted", zero_division=0)
-        all_test_precisions[str(epoch)] = precision_score(all_labels, all_predictions, average="weighted", zero_division=0)
+        all_test_precisions[str(epoch)] = precision_score(all_labels, all_predictions, average="weighted",
+                                                          zero_division=0)
         all_test_recalls[str(epoch)] = recall_score(all_labels, all_predictions, average="weighted", zero_division=0)
 
     @staticmethod
@@ -33,7 +35,7 @@ class Metrics():
             recalls_per_classes[str(i)][str(epoch)] = recall_scores[i]
 
     @staticmethod
-    def plot_metrics(filter_files, filter_agents, filter_metrics, plt=plt):
+    def plot_metrics(args, filter_files, filter_agents, filter_learning_scenario, filter_metrics, plt=plt):
         metrics = {}
         for filename in os.listdir(str(Paths.get_project_root()) + "\\Results"):
             if filter_files in filename:
@@ -48,12 +50,40 @@ class Metrics():
         for key, value in metrics.items():
             if filter_agents in key:
                 for key2 in value.keys():
-                    if filter_metrics in key2:
+                    if filter_metrics in key2 and filter_learning_scenario in key2:
                         filtered[key + ", " + key2] = value[key2]
 
+        title = "performance metric: "
+        kind = "line"
+        if "batch_sizes_per_classes" in filter_metrics:
+            title = "Batch sizes per classes"
+            kind = "bar"
+        elif "test_acc" in filter_metrics:
+            title += "accuracy"
+        elif "test_f1" in filter_metrics:
+            title += "total f1-score"
+        elif "test_pre" in filter_metrics:
+            title += "total precision"
+        elif "test_rec" in filter_metrics:
+            title += "total recall"
+        elif "loss" in filter_metrics:
+            title = "training loss vs testing loss"
+
+        for i in range(args.number_of_classes_in_dataset):
+            if "f1_cla" + str(i) in filter_metrics:
+                title += "f1-score for class " + str(i)
+            elif "pre_cla" + str(i) in filter_metrics:
+                title += "precision for class " + str(i)
+            elif "rec_cla" + str(i) in filter_metrics:
+                title += "recall for class " + str(i)
+
+        if filter_learning_scenario != "":
+            title = filter_learning_scenario + " " + title
+
         df = pd.DataFrame.from_dict(filtered, orient='columns')
-        df.plot(title=" performance metrics", xlabel="global epochs", ylabel="percentage", figsize=(10, 6))
-        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5, fontsize="x-small")
+        df.plot(title=title, xlabel="global epochs", ylabel="percentage", figsize=(10, 6), kind=kind)
+        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5,
+                   fontsize="x-small")
         plt.subplots_adjust(bottom=0.25)
         plt.show()
 

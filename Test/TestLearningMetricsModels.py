@@ -283,7 +283,7 @@ class TestLearningMetricsModels(unittest.TestCase):
         self.assertTrue(os.path.exists(path))
 
         mock_plt = mock.MagicMock()
-        Metrics.plot_metrics("test", "test", "acc", mock_plt)
+        Metrics.plot_metrics(args, "test", "test", "ML", "acc", mock_plt)
         mock_plt.show.assert_called_once()
 
     def test_average_weights(self):

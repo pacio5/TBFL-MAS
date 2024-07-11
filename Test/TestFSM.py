@@ -7,31 +7,32 @@ import spade
 import time
 import traceback
 import unittest
+from Utilities.Paths import Paths
 import yaml
 
 
 class TestFSM(unittest.TestCase):
     @loggingtestcase.capturelogs('FSM', level='INFO', display_logs=DisplayLogs.ALWAYS)
     def test_creation_and_fsm_behaviour(self, logs):
+        fedavg = {"algorithm": "FedAvg", "global_epoch": 1, "number_of_client_agents": 1}
         try:
-            spade.run(main())
+            spade.run(main(fedavg))
         except Exception:
             print(traceback.format_exc())
-
         # set variables
         averaged = 0
-        clients_are_present = 0
-        finished = 0
+        client_agents_are_present = 0
         is_created = 0
         is_set_up = 0
         metrics_calculated = 0
         metrics_stored = 0
         predicted = 0
-        received_from_clients = 0
+        received_from_client_agents = 0
         received_from_server_agent = 0
-        sent_to_clients = 0
+        sent_to_client_agents = 0
         sent_to_the_server = 0
-        starting = 0
+        started = 0
+        stopped = 0
         trained_global_model = 0
         trained_local_model = 0
 
@@ -40,14 +41,14 @@ class TestFSM(unittest.TestCase):
             if config["options"]["algorithm"] != "ML":
                 if "averaged" in log:
                     averaged += 1
-                if "clients are present" in log:
-                    clients_are_present += 1
-                if "received from clients" in log:
-                    received_from_clients += 1
+                if "client agents are present" in log:
+                    client_agents_are_present += 1
+                if "received from client agents" in log:
+                    received_from_client_agents += 1
                 if "received from server agent" in log:
                     received_from_server_agent += 1
-                if "sent to clients" in log:
-                    sent_to_clients += 1
+                if "sent to client agents" in log:
+                    sent_to_client_agents += 1
                 if "sent to the server" in log:
                     sent_to_the_server += 1
                 if "trained local model" in log:
@@ -55,8 +56,6 @@ class TestFSM(unittest.TestCase):
             else:
                 if "trained global model" in log:
                     trained_global_model += 1
-            if "finished" in log:
-                finished += 1
             if "is created" in log:
                 is_created += 1
             if "is set up" in log:
@@ -67,27 +66,29 @@ class TestFSM(unittest.TestCase):
                 metrics_stored += 1
             if "predicted" in log:
                 predicted += 1
-            if "starting" in log:
-                starting += 1
+            if "started" in log:
+                started += 1
+            if "stopped" in log:
+                stopped += 1
 
         # assert if the agents are created and run correctly
         if config["options"]["algorithm"] != "ML":
-            self.assertGreaterEqual(1, averaged)
-            self.assertGreaterEqual(1, clients_are_present)
-            self.assertGreaterEqual(1, received_from_clients)
-            self.assertGreaterEqual(1, received_from_server_agent)
-            self.assertGreaterEqual(1, sent_to_clients)
-            self.assertGreaterEqual(1, sent_to_the_server)
-            self.assertGreaterEqual(1, trained_local_model)
+            self.assertGreaterEqual(averaged, 1)
+            self.assertGreaterEqual(client_agents_are_present, 1)
+            self.assertGreaterEqual(received_from_client_agents, 1)
+            self.assertGreaterEqual(received_from_server_agent, 1)
+            self.assertGreaterEqual(sent_to_client_agents, 1)
+            self.assertGreaterEqual(sent_to_the_server, 1)
+            self.assertGreaterEqual(trained_local_model, 1)
         else:
-            self.assertGreaterEqual(1, trained_global_model)
-        self.assertGreaterEqual(1, finished)
-        self.assertGreaterEqual(1, is_created)
-        self.assertGreaterEqual(1, is_set_up)
-        self.assertGreaterEqual(1, metrics_calculated)
-        self.assertGreaterEqual(1, metrics_stored)
-        self.assertGreaterEqual(1, predicted)
-        self.assertGreaterEqual(1, starting)
+            self.assertGreaterEqual(trained_global_model, 1)
+        self.assertGreaterEqual(is_created, 1)
+        self.assertGreaterEqual(is_set_up, 1)
+        self.assertGreaterEqual(metrics_calculated, 1)
+        self.assertGreaterEqual(metrics_stored, 1)
+        self.assertGreaterEqual(predicted, 1)
+        self.assertGreaterEqual(started, 1)
+        self.assertGreaterEqual(stopped, 1)
 
 
 if __name__ == "__main__":

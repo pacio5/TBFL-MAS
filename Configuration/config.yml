@@ -24,13 +24,13 @@ default:
   batch_size_training: 300
   dataset_testing: "\\fashion dataset\\fashion-mnist_test.csv"
   dataset_training: "\\fashion dataset\\fashion-mnist_train.csv"
-  global_epochs: 5
+  global_epochs: 3
   iid: 1
   jid_server: "server@localhost"
   learning_rate: 0.01
   local_epochs: 5
   new_entry_or_leave: "no changes"
-  number_of_agents: 10
+  number_of_client_agents: 5
   number_of_classes_in_dataset: 10
   standard_deviation_for_noises: 0
   threshold: 0.7

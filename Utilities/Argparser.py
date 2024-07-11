@@ -1,9 +1,13 @@
 import argparse
 from Utilities.Paths import config, Paths
+import yaml
 
 class Argparser():
     @staticmethod
     def args_parser():
+        path_to_launch_config = str(Paths.get_project_root()) + "\\Configuration\\launch_config.yml"
+        launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
+
         parser = argparse.ArgumentParser()
 
         parser.add_argument('--algorithm', type=str, choices=config["options"]["algorithm"],
@@ -20,15 +24,14 @@ class Argparser():
                             default=config["default"]["batch_size_training"],
                             help="batch size that is used for training")
 
-        parser.add_argument('--config_file', type=str,
-                            default=str(Paths.get_project_root()) + "\\Configuration\\RunConfiguration\\config_FedAvg.yml",
-                            help="configuration file *.yaml")
-
         parser.add_argument('--dataset_testing', type=str, default=config["default"]["dataset_testing"],
                             help="path to testing data set")
 
         parser.add_argument('--dataset_training', type=str, default=config["default"]["dataset_training"],
                             help="path to testing data set")
+
+        parser.add_argument('--epoch', type=int, default=1,
+                            help="current epoch")
 
         parser.add_argument('--global_epochs', type=int, default=config["default"]["global_epochs"],
                             help="number of global epochs")
@@ -37,6 +40,10 @@ class Argparser():
                             help="default is IID, change the value to 0 for non-IID")
 
         parser.add_argument('--jid_server', type=str, default=config["default"]["jid_server"])
+
+        parser.add_argument('--launch_config', type=list,
+                            default=list(launch_conf.values()),
+                            help="launch configuration")
 
         parser.add_argument('--learning_rate', type=float, default=config["default"]["learning_rate"],
                             help='learning rate')
@@ -49,8 +56,8 @@ class Argparser():
                             default=config["default"]["new_entry_or_leave"],
                             help="settings for new entry of an agent or agents leaves the MAS,  default is no entry or leave")
 
-        parser.add_argument('--number_of_agents', type=int, default=config["default"]["number_of_agents"],
-                            help="number of agents")
+        parser.add_argument('--number_of_client_agents', type=int, default=config["default"]["number_of_client_agents"],
+                            help="number of client agents")
 
         parser.add_argument('--number_of_classes_in_dataset', type=int,
                             default=config["default"]["number_of_classes_in_dataset"],

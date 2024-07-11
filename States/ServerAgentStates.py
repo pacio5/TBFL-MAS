@@ -40,7 +40,6 @@ class SetUpState(State):
         all_test_recalls = {}
         all_testing_losses = {}
         all_training_losses = {}
-        epoch = 1
         f1_scores_per_classes = {}
         for i in range(self.agent.args.number_of_classes_in_dataset):
             f1_scores_per_classes[str(i)] = {}
@@ -99,7 +98,6 @@ class SetUpState(State):
         self.set("all_training_losses", all_training_losses)
         self.set("criterion", criterion)
         self.set("device", device)
-        self.set("epoch", epoch)
         self.set("f1_scores_per_classes", f1_scores_per_classes)
         self.set("precisions_per_classes", precisions_per_classes)
         self.set("recalls_per_classes", recalls_per_classes)
@@ -118,7 +116,7 @@ class SetUpState(State):
         if self.agent.args.algorithm == "ML":
             self.set_next_state(config["server"]["train"])
         else:
-            await asyncio.sleep(100)
+            await asyncio.sleep(20 * self.agent.args.number_of_client_agents)
             self.set_next_state(config["server"]["control_agents_present"])
 
 
@@ -128,20 +126,20 @@ class TrainState(State):
         all_training_losses = self.get("all_training_losses")
         criterion = self.get("criterion")
         device = self.get("device")
-        epoch = self.get("epoch")
         model = self.get("model")
         optimizer = self.get("optimizer")
         training_losses = []
         x_train = self.get("x_train")
         y_train = self.get("y_train")
 
-        print("-    The agent " + self.agent.name + "  trains the global model at the epoch " + str(epoch))
+        print("-    The agent " + self.agent.name + "  trains the global model at the epoch " +
+              str(self.agent.args.epoch))
         time.sleep(1)
 
         Learning.training(criterion, device, model, optimizer, training_losses, x_train, y_train)
 
         # save training losses as global variable
-        all_training_losses[str(epoch)] = sum(training_losses) / len(training_losses)
+        all_training_losses[str(self.agent.args.epoch)] = sum(training_losses) / len(training_losses)
         self.set("all_training_losses", all_training_losses)
 
         fsm_logger.info(self.agent.name + ": trained global model")
@@ -150,7 +148,7 @@ class TrainState(State):
 
 class ControlAgentsPresentState(State):
     async def run(self):
-        await asyncio.sleep(5)
+        await asyncio.sleep(30)
 
         agentsAvaible = []
         agentsSubscribed = []
@@ -160,9 +158,9 @@ class ControlAgentsPresentState(State):
                 if "type=<PresenceType.AVAILABLE: None>>" in str(agent[1]["presence"]):
                     agentsAvaible.append(agent)
 
-        if (len(agentsAvaible) == len(agentsSubscribed)) and (len(agentsSubscribed) >= self.agent.args.number_of_agents-1):
+        if (len(agentsAvaible) == len(agentsSubscribed)) and (len(agentsSubscribed) >= self.agent.args.number_of_client_agents-1):
             self.set("agents", agentsSubscribed)
-            fsm_logger.info(self.agent.name + ": agents are present")
+            fsm_logger.info(self.agent.name + ": client agents are present")
             self.set_next_state(config["server"]["send"])
         else:
             self.set_next_state(config["server"]["control_agents_present"])
@@ -173,11 +171,11 @@ class SendState(State):
     async def run(self):
         # set local variables
         agents = self.get("agents")
-        epoch = self.get("epoch")
         model = self.get("model")
         weights = str(codecs.encode(pickle.dumps(model.state_dict()), "base64").decode())
 
-        print("-    The agent " + self.agent.name + "  sends messages to the client agents at the epoch " + str(epoch))
+        print("-    The agent " + self.agent.name + "  sends messages to the client agents at the epoch " +
+              str(self.agent.args.epoch))
         time.sleep(1)
 
         # send global weights and training data set to all present registered agents
@@ -188,7 +186,7 @@ class SendState(State):
             try:
                 agent = agents[0]
                 message = Message(to=str(agent[0]))
-                message.body = weights + "|" + str(epoch)
+                message.body = weights + "|" + str(self.agent.args.epoch)
                 await self.send(message)
                 agents_sent.append(agents.pop(0))
                 pbar.update(1)
@@ -198,7 +196,7 @@ class SendState(State):
         pbar.close()
 
         self.set("agents", agents_sent)
-        fsm_logger.info(self.agent.name + ": sent to agents")
+        fsm_logger.info(self.agent.name + ": sent to client agents")
         self.set_next_state(config["server"]["receive"])
 
 
@@ -206,13 +204,12 @@ class ReceiveState(State):
     async def run(self):
         # set local variables
         agents = self.get("agents")
-        epoch = self.get("epoch")
         epoch_updates = {}
         losses = {}
 
         print("-    The agent " + self.agent.name + "  receives messages from the client agents at the epoch " + str(
-            epoch))
-        await asyncio.sleep(self.agent.args.number_of_agents * 40)
+            self.agent.args.epoch))
+        await asyncio.sleep(self.agent.args.number_of_client_agents * 40)
 
         # receive weights from the agents
         pbar = tqdm(total=len(agents),
@@ -235,7 +232,7 @@ class ReceiveState(State):
         self.set("epoch_updates", epoch_updates)
         self.set("losses", losses)
 
-        fsm_logger.info(self.agent.name + ": received from agents")
+        fsm_logger.info(self.agent.name + ": received from client agents")
         self.set_next_state(config["server"]["avg"])
 
 
@@ -245,7 +242,6 @@ class AvgState(State):
         all_training_losses = self.get("all_training_losses")
         criterion = self.get("criterion")
         device = self.get("device")
-        epoch = self.get("epoch")
         epoch_updates = self.get("epoch_updates")
         losses = self.get("losses")
         model = self.get("model")
@@ -254,7 +250,7 @@ class AvgState(State):
         x_train = self.get("x_train")
         y_train = self.get("y_train")
 
-        print("-    The agent " + self.agent.name + "  averages at the epoch " + str(epoch))
+        print("-    The agent " + self.agent.name + "  averages at the epoch " + str(self.agent.args.epoch))
         time.sleep(1)
 
         if self.agent.args.algorithm == "FedSGD":
@@ -269,7 +265,7 @@ class AvgState(State):
             model.load_state_dict(avg["weights"])
 
         # average and save losses globallyPredict
-        all_training_losses[str(epoch)] = sum(losses.values()) / len(losses)
+        all_training_losses[str(self.agent.args.epoch)] = sum(losses.values()) / len(losses)
         self.set("all_training_losses", all_training_losses)
 
         # save updated global model
@@ -287,20 +283,19 @@ class PredictState(State):
         all_testing_losses = self.get("all_testing_losses")
         criterion = self.get("criterion")
         device = self.get("device")
-        epoch = self.get("epoch")
         model = self.get("model")
         testing_losses = []
         x_test = self.get("x_test")
         y_test = self.get("y_test")
         y_test_original_labels = self.get("y_test_original_labels")
 
-        print("-    The agent " + self.agent.name + "  predicts at the epoch " + str(epoch))
+        print("-    The agent " + self.agent.name + "  predicts at the epoch " + str(self.agent.args.epoch))
         time.sleep(1)
 
         Learning.predicting(all_labels, all_predictions, criterion, device, model, testing_losses, x_test,
                    y_test_original_labels, y_test)
 
-        all_testing_losses[str(epoch)] = sum(testing_losses) / len(testing_losses)
+        all_testing_losses[str(self.agent.args.epoch)] = sum(testing_losses) / len(testing_losses)
 
         # save label and predictions as global variables
         self.set("all_labels", all_labels)
@@ -320,21 +315,20 @@ class CalculateMetricsState(State):
         all_test_f1_scores = self.get("all_test_f1_scores")
         all_test_precisions = self.get("all_test_precisions")
         all_test_recalls = self.get("all_test_recalls")
-        epoch = self.get("epoch")
         f1_scores_per_classes = self.get("f1_scores_per_classes")
         precisions_per_classes = self.get("precisions_per_classes")
         recalls_per_classes = self.get("recalls_per_classes")
 
         print("-    The agent " + self.agent.name +
               "  calculates the accuracy, f1-score, precision and recall at the epoch "
-              + str(epoch))
+              + str(self.agent.args.epoch))
 
         # calculate metrics
         Metrics.calculate_metrics(all_labels, all_predictions, all_test_accuracies, all_test_f1_scores,
-                          all_test_precisions, all_test_recalls, epoch)
-        Metrics.calculate_f1_score_per_classes(all_labels, all_predictions, epoch, f1_scores_per_classes)
-        Metrics.calculate_precisions_per_classes(all_labels, all_predictions, epoch, precisions_per_classes)
-        Metrics.calculate_recalls_per_classes(all_labels, all_predictions, epoch, recalls_per_classes)
+                          all_test_precisions, all_test_recalls, self.agent.args.epoch)
+        Metrics.calculate_f1_score_per_classes(all_labels, all_predictions, self.agent.args.epoch, f1_scores_per_classes)
+        Metrics.calculate_precisions_per_classes(all_labels, all_predictions, self.agent.args.epoch, precisions_per_classes)
+        Metrics.calculate_recalls_per_classes(all_labels, all_predictions, self.agent.args.epoch, recalls_per_classes)
 
         # save metrics as global variables
         self.set("all_test_accuracies", all_test_accuracies)
@@ -356,44 +350,44 @@ class CalculateMetricsState(State):
 
         fsm_logger.info(self.agent.name + ": metrics calculated")
         if self.agent.args.wait_until_threshold_is_reached == "acc":
-            if all_test_accuracies[str(epoch)] > self.agent.args.threshold:
+            if all_test_accuracies[str(self.agent.args.epoch)] > self.agent.args.threshold:
                 self.set_next_state(config["server"]["store_metrics"])
             else:
-                self.set("epoch", epoch + 1)
+                self.agent.args.epoch += 1
                 if self.agent.args.algorithm == "ML":
                     self.set_next_state(config["server"]["train"])
                 else:
                     self.set_next_state(config["server"]["control_agents_present"])
         elif self.agent.args.wait_until_threshold_is_reached == "f1":
-            if all_test_f1_scores[str(epoch)] > self.agent.args.threshold:
+            if all_test_f1_scores[str(self.agent.args.epoch)] > self.agent.args.threshold:
                 self.set_next_state(config["server"]["store_metrics"])
             else:
-                self.set("epoch", epoch + 1)
+                self.agent.args.epoch += 1
                 if self.agent.args.algorithm == "ML":
                     self.set_next_state(config["server"]["train"])
                 else:
                     self.set_next_state(config["server"]["control_agents_present"])
         elif self.agent.args.wait_until_threshold_is_reached == "pre":
-            if all_test_precisions[str(epoch)] > self.agent.args.threshold:
+            if all_test_precisions[str(self.agent.args.epoch)] > self.agent.args.threshold:
                 self.set_next_state(config["server"]["store_metrics"])
             else:
-                self.set("epoch", epoch + 1)
+                self.agent.args.epoch += 1
                 if self.agent.args.algorithm == "ML":
                     self.set_next_state(config["server"]["train"])
                 else:
                     self.set_next_state(config["server"]["control_agents_present"])
         elif self.agent.args.wait_until_threshold_is_reached == "rec":
-            if all_test_recalls[str(epoch)] > self.agent.args.threshold:
+            if all_test_recalls[str(self.agent.args.epoch)] > self.agent.args.threshold:
                 self.set_next_state(config["server"]["store_metrics"])
             else:
-                self.set("epoch", epoch + 1)
+                self.agent.args.epoch += 1
                 if self.agent.args.algorithm == "ML":
                     self.set_next_state(config["server"]["train"])
                 else:
                     self.set_next_state(config["server"]["control_agents_present"])
         else:
-            if self.agent.args.global_epochs > epoch:
-                self.set("epoch", epoch + 1)
+            if self.agent.args.global_epochs > self.agent.args.epoch:
+                self.agent.args.epoch += 1
                 if self.agent.args.algorithm == "ML":
                     self.set_next_state(config["server"]["train"])
                 else:
@@ -411,15 +405,15 @@ class StoreMetricsState(State):
         all_test_precisions = self.get("all_test_precisions")
         all_test_recalls = self.get("all_test_recalls")
         all_training_losses = self.get("all_training_losses")
-        epoch = self.get("epoch")
         f1_scores_per_classes = self.get("f1_scores_per_classes")
         precisions_per_classes = self.get("precisions_per_classes")
         recalls_per_classes = self.get("recalls_per_classes")
 
-        print("-    The agent " + self.agent.name + " stores the metrics at the epoch " + str(epoch))
+        print("-    The agent " + self.agent.name + " stores the metrics at the epoch " + str(self.agent.args.epoch))
 
         if self.agent.args.wait_until_threshold_is_reached != "no threshold":
-            print("Epochs needed to reach the threshold " + str(self.agent.args.threshold) + ": " + str(epoch))
+            print("Epochs needed to reach the threshold " + str(self.agent.args.threshold) + ": " +
+                  str(self.agent.args.epoch))
 
         # store metrics
         Metrics.store_metrics(self.agent.name, all_test_accuracies, all_test_f1_scores, all_test_precisions, all_test_recalls,

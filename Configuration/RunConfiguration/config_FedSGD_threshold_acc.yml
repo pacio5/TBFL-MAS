@@ -1,2 +1,0 @@
-algorithm: "FedSGD"
-wait_until_threshold_is_reached: "acc"
