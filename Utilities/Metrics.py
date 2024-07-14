@@ -1,8 +1,10 @@
 import json
+
+import numpy as np
 from matplotlib import pyplot as plt
 import os
 import pandas as pd
-from Utilities.Paths import Paths
+from Utilities.Paths import Paths, config
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
@@ -35,56 +37,72 @@ class Metrics:
             recalls_per_classes[str(i)][str(epoch)] = recall_scores[i]
 
     @staticmethod
-    def plot_metrics(args, filter_files, filter_agents, filter_learning_scenario, filter_metrics, plt=plt):
+    def plot_metrics(args, filter_files, filter_agents, filter_learning_scenarios, filter_metrics, plt=plt):
+        colors_styles = ['b', 'y', 'r', 'c', 'g', 'm', 'k', 'brown', 'grey', 'violet', 'pink', 'indigo', 'olive']
+        marker_styles = ['v', '^', '<', '>', '8', 's', 'P', 'h', '*', 'o', 'X', 'D', 'd']
+        line_styles = ['-', '-.', ':', '--']
+        colors_per_agent = {}
         metrics = {}
+        style = []
+        colors = []
+        x = 0
         for filename in os.listdir(str(Paths.get_project_root()) + "\\Results"):
             if filter_files in filename:
                 path = str(Paths.get_project_root()) + "\\Results\\" + filename
                 if os.path.getsize(path) > 0:
                     with open(path, "r") as metrics_file:
                         metrics[filename] = json.load(metrics_file)
+                        colors_per_agent[filename] = colors_styles[x]
+                        if len(colors_styles)-1 > x:
+                            x += 1
+                        else:
+                            x = 0
                 else:
                     return
+
+        list_keys = list(metrics.keys())
+        count = 0
+        for item in list_keys:
+            if filter_agents in item:
+                count += 1
 
         filtered = {}
         for key, value in metrics.items():
             if filter_agents in key:
                 for key2 in value.keys():
-                    if filter_metrics in key2 and filter_learning_scenario in key2:
-                        filtered[key + ", " + key2] = value[key2]
+                    if key2 == filter_metrics["metrics"][0]:
+                        filtered[key2] = value[key2]
+                        colors = colors_per_agent[key]
+                    else:
+                        array = key2.split(",")
+                        metric = array[-1][1:]
+                        learning_scenario = ""
+                        for line in range(len(array) - 1):
+                            learning_scenario += array[line]
+                        for i in range(len(filter_learning_scenarios["learning_scenarios"])):
+                            for j in range(len(filter_metrics["metrics"])):
+                                if (filter_metrics["metrics"][j] == metric and
+                                        filter_learning_scenarios["learning_scenarios"][i] == learning_scenario):
+                                    filtered[key + ", " + key2] = value[key2]
+                                    if len(filter_metrics["metrics"]) < len(filter_learning_scenarios["learning_scenarios"]) \
+                                            and count == 1:
+                                        style.append(marker_styles[i] + line_styles[j])
+                                        colors.append(colors_styles[i])
+                                    elif count == 1:
+                                        style.append(marker_styles[j] + line_styles[i])
+                                        colors.append(colors_styles[j])
+                                    elif count > 1:
+                                        style.append(marker_styles[i] + line_styles[i])
+                                        colors.append(colors_per_agent[key])
 
-        title = "performance metric: "
-        kind = "line"
-        if "batch_sizes_per_classes" in filter_metrics:
-            title = "Batch sizes per classes"
-            kind = "bar"
-        elif "test_acc" in filter_metrics:
-            title += "accuracy"
-        elif "test_f1" in filter_metrics:
-            title += "total f1-score"
-        elif "test_pre" in filter_metrics:
-            title += "total precision"
-        elif "test_rec" in filter_metrics:
-            title += "total recall"
-        elif "loss" in filter_metrics:
-            title = "training loss vs testing loss"
-
-        for i in range(args.number_of_classes_in_dataset):
-            if "f1_cla" + str(i) in filter_metrics:
-                title += "f1-score for class " + str(i)
-            elif "pre_cla" + str(i) in filter_metrics:
-                title += "precision for class " + str(i)
-            elif "rec_cla" + str(i) in filter_metrics:
-                title += "recall for class " + str(i)
-
-        if filter_learning_scenario != "":
-            title = filter_learning_scenario + " " + title
 
         df = pd.DataFrame.from_dict(filtered, orient='columns')
-        df.plot(title=title, xlabel="global epochs", ylabel="percentage", figsize=(10, 6), kind=kind)
-        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True, ncol=5,
+        df.plot(title=filter_learning_scenarios["title"] + filter_metrics["title"],
+                xlabel=filter_metrics["xlabel"], ylabel=filter_metrics["ylabel"], figsize=(10, 6),
+                kind=filter_metrics["kind"], color=colors, style=style)
+        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=True, ncol=3,
                    fontsize="x-small")
-        plt.subplots_adjust(bottom=0.25)
+        plt.subplots_adjust(bottom=0.3)
         plt.show()
 
     @staticmethod
@@ -98,12 +116,16 @@ class Metrics:
         else:
             metrics = {"batch_sizes_per_classes": batch_sizes_per_classes}
         key = args.algorithm
+        if args.global_epochs != config["default"]["global_epochs"]:
+            key += ", global epochs=" + str(args.global_epochs)
         if args.iid == 0:
             key += ", non-IID"
         if args.new_entry_or_leave == "new entry":
             key += ", new entry"
         elif args.new_entry_or_leave == "leave":
             key += ", leave"
+        if args.number_of_client_agents != config["default"]["number_of_client_agents"]:
+            key += ", clients=" + str(args.number_of_client_agents)
         if args.standard_deviation_for_noises == 1:
             key += ", low noises"
         if args.standard_deviation_for_noises == 2:

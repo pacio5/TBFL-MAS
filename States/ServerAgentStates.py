@@ -224,10 +224,9 @@ class ReceiveState(State):
                     epoch_updates[message.sender] = pickle.loads(codecs.decode(messages[0].encode(), "base64"))
                 losses[message.sender] = float(messages[1])
                 pbar.update(1)
-            if pbar.format_dict["elapsed"] > 100:
+            if pbar.format_dict["elapsed"] > 500:
                 break
         pbar.close()
-
         # save epoch_updates and losses as global variable
         self.set("epoch_updates", epoch_updates)
         self.set("losses", losses)

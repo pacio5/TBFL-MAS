@@ -33,7 +33,7 @@ class Learning:
         for i in tqdm(avg["weights"].keys()):
             avg["weights"][i] = torch.div(avg["weights"][i], len(weights.keys()))
 
-
+    @staticmethod
     def gradient_descent(criterion, device, model, optimizer, x_train, y_train):
         # setting model up for training
         model.train()
@@ -47,7 +47,7 @@ class Learning:
             loss.backward()
             optimizer.step()
 
-
+    @staticmethod
     def predicting(all_labels, all_predictions, criterion, device, model,
                    testing_losses, x_test, y_original_labels, y_test):
         # setting model up for evaluating
@@ -66,7 +66,7 @@ class Learning:
                 all_predictions.extend(predictions.tolist())
                 all_labels.extend(y_original_labels.tolist())
 
-
+    @staticmethod
     def training(criterion, device, model, optimizer, training_losses, x_train, y_train):
         # setting model up for training
         model.train()

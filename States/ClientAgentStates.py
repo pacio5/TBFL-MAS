@@ -245,7 +245,8 @@ class SendState(State):
                 personal_layers[key] = weights[key]
                 weights.pop(key)
             epoch_update = str(codecs.encode(pickle.dumps(weights), "base64").decode())
-
+        else:
+            print("no known algorithm: " + self.agent.args.algorithm)
         try:
             message = Message(to=self.agent.args.jid_server)
             message.body = epoch_update + "|" + epoch_loss
@@ -332,9 +333,14 @@ class CalculateMetricsState(State):
         If it's not the last global epoch, proceed to the next one. 
         Otherwise, store the collected metrics.
         '''
-
         fsm_logger.info(self.agent.name + ": metrics calculated")
-        if self.agent.args.global_epochs > epoch:
+        leave = False
+        await asyncio.sleep(30)
+        for agent in list(filter(lambda x: ("presence" in x[1]), self.agent.presence.get_contacts().items())):
+            if agent[1]["subscription"] != "both" and "server" in str(agent[1]["presence"]):
+                leave = True
+
+        if self.agent.args.global_epochs > epoch and not leave:
             self.set("epoch", epoch + 1)
             self.set_next_state(config["client_agent"]["receive"])
         else:

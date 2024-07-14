@@ -28,7 +28,7 @@ learning_scenarios:
   # seventh
   FedAvg_5_global_epoch: {
     algorithm: "FedAvg",
-    global_epoch: 5
+    global_epochs: 5
   }
   # eight
   FedAvg_non_IID: {
@@ -231,4 +231,14 @@ learning_scenarios:
   FedPER_threshold_recall: {
     algorithm: "FedPER",
     wait_until_threshold_is_reached: "rec"
+  }
+
+  FedPER_10_global_epochs: {
+    algorithm: "FedPER",
+    global_epochs: 10
+  }
+
+  FedPER_50_global_epochs: {
+    algorithm: "FedPER",
+    global_epochs: 50
   }
