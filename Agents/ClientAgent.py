@@ -4,6 +4,7 @@ from States.ClientAgentStates import *
 from spade.agent import Agent
 
 
+# Client agent
 class ClientAgent(Agent):
     def __init__(self, name, password, args, batch_sizes_per_classes, random_seed_testing, random_seed_training):
         super().__init__(name, password)
@@ -16,6 +17,7 @@ class ClientAgent(Agent):
         print("Agent {} running".format(self.name))
         fsm = StartAndEndFSMBehaviour()
 
+        # add states
         fsm.add_state(name=config["client_agent"]["set_up"], state=SetUpState(), initial=True)
         fsm.add_state(name=config["client_agent"]["receive"], state=ReceiveState())
         fsm.add_state(name=config["client_agent"]["train"], state=TrainState())
@@ -24,6 +26,7 @@ class ClientAgent(Agent):
         fsm.add_state(name=config["client_agent"]["calculate_metrics"], state=CalculateMetricsState())
         fsm.add_state(name=config["client_agent"]["store_metrics"], state=StoreMetricsState())
 
+        # add transitions
         fsm.add_transition(config["client_agent"]["set_up"], config["client_agent"]["receive"])
         fsm.add_transition(config["client_agent"]["receive"], config["client_agent"]["receive"])
         fsm.add_transition(config["client_agent"]["receive"], config["client_agent"]["train"])
@@ -33,5 +36,6 @@ class ClientAgent(Agent):
         fsm.add_transition(config["client_agent"]["calculate_metrics"], config["client_agent"]["receive"])
         fsm.add_transition(config["client_agent"]["calculate_metrics"], config["client_agent"]["store_metrics"])
 
+        # add behaviours
         self.add_behaviour(SubscriptionBehaviour(self.args.jid_server))
         self.add_behaviour(fsm)

@@ -1,3 +1,4 @@
+# definitions on all learning scenarios, optional configuration
 learning_scenarios:
   # default: first
   ML: { }

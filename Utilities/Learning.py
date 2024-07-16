@@ -4,6 +4,7 @@ from tqdm import tqdm
 from tqdm.contrib import tzip
 
 class Learning:
+    # average gradients of the optimizer
     @staticmethod
     def average_gradients(avg, gradients):
         # average gradients
@@ -22,6 +23,7 @@ class Learning:
                     for k in avg["gradients"][i][j].keys():
                         avg["gradients"][i][j][k] = torch.div(avg["gradients"][i][j][k], len(gradients.keys()))
 
+    # average weights of the model
     @staticmethod
     def average_weights(avg, weights):
         # average weights
@@ -33,6 +35,7 @@ class Learning:
         for i in tqdm(avg["weights"].keys()):
             avg["weights"][i] = torch.div(avg["weights"][i], len(weights.keys()))
 
+    # make a gradient descent step
     @staticmethod
     def gradient_descent(criterion, device, model, optimizer, x_train, y_train):
         # setting model up for training
@@ -47,6 +50,7 @@ class Learning:
             loss.backward()
             optimizer.step()
 
+    # predict the model
     @staticmethod
     def predicting(all_labels, all_predictions, criterion, device, model,
                    testing_losses, x_test, y_original_labels, y_test):
@@ -66,6 +70,7 @@ class Learning:
                 all_predictions.extend(predictions.tolist())
                 all_labels.extend(y_original_labels.tolist())
 
+    # train the model
     @staticmethod
     def training(criterion, device, model, optimizer, training_losses, x_train, y_train):
         # setting model up for training

@@ -156,7 +156,7 @@ class ReceiveState(State):
             print("-    The agent " + self.agent.name + " receives a message from the central agent at epoch " + str(
                 epoch))
 
-        # redo until the global model and the training data set are gotten from the server
+        # redo until the weights and the epoch number of the server agent are received
         message = await self.receive(timeout=None)
         if message is not None:
             messages = message.body.split("|")
@@ -204,6 +204,7 @@ class TrainState(State):
         print("-    The agent " + self.agent.name + " trains the local model at epoch " + str(epoch))
         time.sleep(1)
 
+        # train the model
         Learning.training(criterion, device, model, optimizer, training_losses, x_train, y_train)
 
         # save all_training_losses, model, training losses and optimizer
@@ -231,6 +232,7 @@ class SendState(State):
 
         print("-    The agent " + self.agent.name + " sends a message to the central agent at epoch " + str(epoch))
 
+        # prepare in different algorithms the weights or the gradients as epoch updates
         if self.agent.args.algorithm == "FedAvg":
             epoch_update = str(codecs.encode(pickle.dumps(model.state_dict()), "base64").decode())
         elif self.agent.args.algorithm == "FedSGD":
@@ -247,6 +249,8 @@ class SendState(State):
             epoch_update = str(codecs.encode(pickle.dumps(weights), "base64").decode())
         else:
             print("no known algorithm: " + self.agent.args.algorithm)
+
+        # send the weights or the gradients with the losses to the server agent
         try:
             message = Message(to=self.agent.args.jid_server)
             message.body = epoch_update + "|" + epoch_loss
@@ -280,6 +284,7 @@ class PredictState(State):
         print("-    The agent " + self.agent.name + "  predicts at the epoch " + str(epoch))
         time.sleep(1)
 
+        # predict the model
         Learning.predicting(all_labels, all_predictions, criterion, device, model, testing_losses, x_test,
                    y_test_original_labels, y_test)
 
@@ -329,17 +334,20 @@ class CalculateMetricsState(State):
         self.set("precisions_per_classes", precisions_per_classes)
         self.set("recalls_per_classes", recalls_per_classes)
 
-        '''
-        If it's not the last global epoch, proceed to the next one. 
-        Otherwise, store the collected metrics.
-        '''
         fsm_logger.info(self.agent.name + ": metrics calculated")
+
+        # control if the agent has left the MAS or not
         leave = False
         await asyncio.sleep(30)
         for agent in list(filter(lambda x: ("presence" in x[1]), self.agent.presence.get_contacts().items())):
             if agent[1]["subscription"] != "both" and "server" in str(agent[1]["presence"]):
                 leave = True
 
+        '''
+            If it's not the last global epoch and the agent didn't leave the MAS,
+            then proceed to the next one. 
+            Otherwise, store the collected metrics.
+        '''
         if self.agent.args.global_epochs > epoch and not leave:
             self.set("epoch", epoch + 1)
             self.set_next_state(config["client_agent"]["receive"])
@@ -363,6 +371,7 @@ class StoreMetricsState(State):
 
         print("-    The agent " + self.agent.name + "  stores the metrics at the epoch " + str(epoch))
 
+        # show last epoch if the threshold is reached
         if self.agent.args.wait_until_threshold_is_reached != "no threshold":
             print("Epochs needed to reach the threshold " + str(self.agent.args.threshold) + ": " + str(epoch))
 

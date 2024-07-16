@@ -14,11 +14,15 @@ import yaml
 class TestFSM(unittest.TestCase):
     @loggingtestcase.capturelogs('FSM', level='INFO', display_logs=DisplayLogs.ALWAYS)
     def test_creation_and_fsm_behaviour(self, logs):
+        # define configuration
         fedavg = {"algorithm": "FedAvg", "global_epoch": 1, "number_of_client_agents": 1}
+
+        # run agents for testing FSM with defined configuration
         try:
             spade.run(main(fedavg))
         except Exception:
             print(traceback.format_exc())
+
         # set variables
         averaged = 0
         client_agents_are_present = 0

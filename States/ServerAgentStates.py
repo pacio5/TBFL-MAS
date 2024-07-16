@@ -136,6 +136,7 @@ class TrainState(State):
               str(self.agent.args.epoch))
         time.sleep(1)
 
+        # train the model
         Learning.training(criterion, device, model, optimizer, training_losses, x_train, y_train)
 
         # save training losses as global variable
@@ -150,6 +151,7 @@ class ControlAgentsPresentState(State):
     async def run(self):
         await asyncio.sleep(30)
 
+        # list the subscribed agents that are available
         agentsAvaible = []
         agentsSubscribed = []
         for agent in list(filter(lambda x: ("presence" in x[1]), self.agent.presence.get_contacts().items())):
@@ -158,6 +160,7 @@ class ControlAgentsPresentState(State):
                 if "type=<PresenceType.AVAILABLE: None>>" in str(agent[1]["presence"]):
                     agentsAvaible.append(agent)
 
+        # control of all subscribed agents are available
         if (len(agentsAvaible) == len(agentsSubscribed)) and (len(agentsSubscribed) >= self.agent.args.number_of_client_agents-1):
             self.set("agents", agentsSubscribed)
             fsm_logger.info(self.agent.name + ": client agents are present")
@@ -291,6 +294,7 @@ class PredictState(State):
         print("-    The agent " + self.agent.name + "  predicts at the epoch " + str(self.agent.args.epoch))
         time.sleep(1)
 
+        # predict with model
         Learning.predicting(all_labels, all_predictions, criterion, device, model, testing_losses, x_test,
                    y_test_original_labels, y_test)
 
@@ -346,7 +350,6 @@ class CalculateMetricsState(State):
         If wait_until_threshold_is_reached has set a threshold,
         then the training ends only if this threshold is reached.
         '''
-
         fsm_logger.info(self.agent.name + ": metrics calculated")
         if self.agent.args.wait_until_threshold_is_reached == "acc":
             if all_test_accuracies[str(self.agent.args.epoch)] > self.agent.args.threshold:
@@ -410,6 +413,7 @@ class StoreMetricsState(State):
 
         print("-    The agent " + self.agent.name + " stores the metrics at the epoch " + str(self.agent.args.epoch))
 
+        # show last epoch if the threshold is reached
         if self.agent.args.wait_until_threshold_is_reached != "no threshold":
             print("Epochs needed to reach the threshold " + str(self.agent.args.threshold) + ": " +
                   str(self.agent.args.epoch))

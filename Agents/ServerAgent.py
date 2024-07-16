@@ -5,6 +5,7 @@ from States.ServerAgentStates import *
 from Utilities.Paths import config
 
 
+# Server agent
 class ServerAgent(Agent):
     def __init__(self, name, password, args, batch_sizes_per_classes, random_seed_testing, random_seed_training):
         super().__init__(name, password)
@@ -17,6 +18,7 @@ class ServerAgent(Agent):
         print("Agent {} running".format(self.name))
         fsm = StartAndEndFSMBehaviour()
 
+        # add states
         fsm.add_state(name=config["server"]["set_up"], state=SetUpState(), initial=True)
         fsm.add_state(name=config["server"]["train"], state=TrainState())
         fsm.add_state(name=config["server"]["control_agents_present"], state=ControlAgentsPresentState())
@@ -27,6 +29,7 @@ class ServerAgent(Agent):
         fsm.add_state(name=config["server"]["calculate_metrics"], state=CalculateMetricsState())
         fsm.add_state(name=config["server"]["store_metrics"], state=StoreMetricsState())
 
+        # add transitions
         fsm.add_transition(config["server"]["set_up"], config["server"]["train"])
         fsm.add_transition(config["server"]["train"], config["server"]["predict"])
         fsm.add_transition(config["server"]["set_up"], config["server"]["control_agents_present"])
@@ -40,5 +43,6 @@ class ServerAgent(Agent):
         fsm.add_transition(config["server"]["calculate_metrics"], config["server"]["train"])
         fsm.add_transition(config["server"]["calculate_metrics"], config["server"]["store_metrics"])
 
+        # add behaviours
         self.add_behaviour(SubscriptionBehaviour())
         self.add_behaviour(fsm)

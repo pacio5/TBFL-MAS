@@ -7,9 +7,9 @@ class Argparser():
     def args_parser():
         path_to_launch_config = str(Paths.get_project_root()) + "\\Configuration\\launch_config.yml"
         launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
-
         parser = argparse.ArgumentParser()
 
+        # add parsers
         parser.add_argument('--algorithm', type=str, choices=config["options"]["algorithm"],
                             default=config["default"]["algorithm"],
                             help="algorithm that is used for learning, default is FedAvg")

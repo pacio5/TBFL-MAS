@@ -9,33 +9,39 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 
 class Metrics:
+    # calculate f1 scores for every class in the dataset
     @staticmethod
     def calculate_f1_score_per_classes(all_labels, all_predictions, epoch, f1_scores_per_classes):
         f1_scores = f1_score(all_labels, all_predictions, average=None, zero_division=0)
         for i in range(len(f1_scores)):
             f1_scores_per_classes[str(i)][str(epoch)] = f1_scores[i]
 
+    # calculate accuracy, f1, precision and recall scores
     @staticmethod
     def calculate_metrics(all_labels, all_predictions, all_test_accuracies, all_test_f1_scores,
                           all_test_precisions, all_test_recalls, epoch):
         all_test_accuracies[str(epoch)] = accuracy_score(all_labels, all_predictions)
+        # calculate in total, not in every class
         all_test_f1_scores[str(epoch)] = f1_score(all_labels, all_predictions, average="weighted", zero_division=0)
         all_test_precisions[str(epoch)] = precision_score(all_labels, all_predictions, average="weighted",
                                                           zero_division=0)
         all_test_recalls[str(epoch)] = recall_score(all_labels, all_predictions, average="weighted", zero_division=0)
 
+    # calculate precision scores for every class in the dataset
     @staticmethod
     def calculate_precisions_per_classes(all_labels, all_predictions, epoch, precisions_per_classes):
         precision_scores = precision_score(all_labels, all_predictions, average=None, zero_division=0)
         for i in range(len(precision_scores)):
             precisions_per_classes[str(i)][str(epoch)] = precision_scores[i]
 
+    # calculate recall scores for every class in the dataset
     @staticmethod
     def calculate_recalls_per_classes(all_labels, all_predictions, epoch, recalls_per_classes):
         recall_scores = recall_score(all_labels, all_predictions, average=None, zero_division=0)
         for i in range(len(recall_scores)):
             recalls_per_classes[str(i)][str(epoch)] = recall_scores[i]
 
+    # plot the metrics
     @staticmethod
     def plot_metrics(args, filter_files, filter_agents, filter_learning_scenarios, filter_metrics, plt=plt):
         colors_styles = ['b', 'y', 'r', 'c', 'g', 'm', 'k', 'brown', 'grey', 'violet', 'pink', 'indigo', 'olive']
@@ -105,6 +111,7 @@ class Metrics:
         plt.subplots_adjust(bottom=0.3)
         plt.show()
 
+    # store the metrics
     @staticmethod
     def store_metrics(agent_name, all_test_accuracies, all_test_f1_scores, all_test_precisions, all_test_recalls,
                       all_testing_losses, all_training_losses, args, batch_sizes_per_classes,

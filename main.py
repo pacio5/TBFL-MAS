@@ -16,23 +16,30 @@ import yaml
 fsm_logger = logging.getLogger("FSM")
 agents = {}
 
+
+# run FL-MAS with one configuration
 async def main(launch_config={}):
+    # set variables
     args = Argparser.args_parser()
     batch_size_options = config["options"]["batch_size_per_class"]
 
+    # update configuration
     opt = vars(args)
     opt.update(launch_config)
 
+    # create server agent
     batch_size_per_classes_server = {}
     Data.prepare_batch_sizes_per_classes(args, batch_size_options,
                                     batch_size_per_classes_server, 100)
-
     server = ServerAgent(args.jid_server, "server", args,
                          batch_size_per_classes_server, 100, 200)
     agents["server"] = server
     await server.start(auto_register=True)
     fsm_logger.info(args.jid_server + " is created")
+
+    # create client agents only if FL is used
     if args.algorithm != "ML":
+        # create as many agents as defined
         for i in range(args.number_of_client_agents):
             batch_size_per_classes = {}
             Data.prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, i * 13)
@@ -68,18 +75,27 @@ async def main(launch_config={}):
         except KeyboardInterrupt:
             break
 
+
+# run FL-MAS multiple times with different configuration
 async def multiple_mains():
+    # set variables
     args = Argparser.args_parser()
     path_to_learning_scenarios_config = str(Paths.get_project_root()) + "\\Configuration\\learning_scenarios_config.yml"
     learning_scenarios_conf = yaml.load(open(path_to_learning_scenarios_config), Loader=yaml.FullLoader)
+
+    # run every configuration that is defined to run in the launch_config
     for learning_scenarios in args.launch_config:
         for learning_scenario in learning_scenarios:
             print("This run uses the learning scenario {}".format(learning_scenario))
             await main(launch_config=learning_scenarios_conf["learning_scenarios"][learning_scenario])
             print(learning_scenario + " is done")
 
+
+# plot the metrics for different learning scenarios
 def plot():
     args = Argparser.args_parser()
+
+    # different metrics
     acc = {"metrics": ["test_acc"], "xlabel": "global epochs",
            "ylabel": "accuracy score", "title": "total accuracy scores", "kind": "line"}
     loss = {"metrics": ["test_loss", "train_loss"], "xlabel": "global epochs", "ylabel": "loss",
@@ -102,6 +118,8 @@ def plot():
                            "title": "recall scores per class " + str(i), "kind": "line"}
         cla[str(i)] = {"metrics": ["f1_cla" + str(i), "pre_cla" + str(i), "rec_cla" + str(i)], "xlabel": "global epochs",
                        "ylabel": "score", "title": "scores per class " + str(i), "kind": "line"}
+
+    # different learning scenarios
     learning_scenario_1_2_10_12 = {"learning_scenarios": ["ML", "FedAvg", "FedSGD", "FedPER"],
                                    "title": "comparison of algorithms: "}
 
@@ -113,14 +131,11 @@ def plot():
 
     learning_scenario_2_6_7 = {"learning_scenarios": ['FedAvg global epochs=5', "FedAvg", 'FedAvg acc=0.7'],
                                "title": "comparison of training time and the accuracy score: "}
-
     learning_scenario_2_3_12_13 = {
         "learning_scenarios": ["FedAvg", "FedAvg high noises", "FedPER", "FedPER high noises"],
         "title": "comparison of algorithms of handling noises: "}
-
     learning_scenario_8_11_14 = {"learning_scenarios": ["FedAvg non-IID", "FedSGD non-IID", "FedPER non-IID"],
-                                 "title": "comparison of algorithms of handling non-IID data: "}
-
+                                "title": "comparison of algorithms of handling non-IID data: "}
     FedAvg = {"learning_scenarios": ["FedAvg non-IID"],
                                  "title": "FedAvg on handling non-IID data: "}
     FedAvg_10_agents = {"learning_scenarios": ["FedAvg non-IID clients=10"],
@@ -130,8 +145,10 @@ def plot():
     FedPER = {"learning_scenarios": ["FedPER non-IID"],
                                  "title": "FedPER on handling non-IID data: "}
 
+    # agents
     filter_agents = ["server", "client0", "client1", "client2", "client3", "client4"]
 
+    # plot metrics with different metrics and learning scenarios
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(9)])
     Metrics.plot_metrics(args, "", "server", learning_scenario_1_2_10_12, test)
     Metrics.plot_metrics(args, "", "server", learning_scenario_8_9,  f1_cla["2"])

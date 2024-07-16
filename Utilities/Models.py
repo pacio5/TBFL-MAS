@@ -1,6 +1,6 @@
 from torch import nn
 
-
+# CNN model
 class CNN(nn.Module):
     def __init__(self, num_classes=10):
         super(CNN, self).__init__()
@@ -25,7 +25,7 @@ class CNN(nn.Module):
         x = self.fc2(x)
         return x
 
-
+# class for FedPER
 class PersonalCNN(nn.Module):
     def __init__(self, num_classes=10):
         super(PersonalCNN, self).__init__()
@@ -36,8 +36,11 @@ class PersonalCNN(nn.Module):
                                              padding='same'), nn.BatchNorm2d(num_features=128), nn.LeakyReLU(0.01))
         self.pool2 = nn.Sequential(nn.MaxPool2d(2))
         self.fc1 = nn.Sequential(nn.Linear(in_features=6272, out_features=1028), nn.ReLU())
+
+        # personal layers
         self.pl1 = nn.Sequential(nn.Linear(in_features=1028, out_features=4096), nn.ReLU())
         self.pl2 = nn.Sequential(nn.Linear(in_features=4096, out_features=1028), nn.ReLU())
+
         self.fc2 = nn.Linear(in_features=1028, out_features=num_classes)
 
     def forward(self, x):

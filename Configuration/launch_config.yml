@@ -1,3 +1,4 @@
+# selected configuration to run
 launch:
   ["ML", "FedAvg", "FedAvg_high_noises", "FedAvg_leave", "FedAvg_new_entry", "FedAvg_threshold_accuracy",
   "FedAvg_5_global_epoch", "FedAvg_non_IID", "FedAvg_10_client_agents_non_IID", "FedSGD", "FedSGD_non_IID",

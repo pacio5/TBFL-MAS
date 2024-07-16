@@ -3,6 +3,7 @@ import pandas as pd
 from Utilities.Paths import Paths
 
 class Data():
+    # preparing batch sizes for the classes in the dataset for non-IID settings
     @staticmethod
     def prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, random_seed=0):
         np.random.seed(random_seed)
@@ -15,6 +16,7 @@ class Data():
         for i in range(len(classes_of_data_object_per_agent)):
             batch_size_per_classes[str(i)] = batch_size_options[np.random.randint(len(batch_size_options))]
 
+    # prepare dataset for learning and predicting
     @staticmethod
     def prepare_dataset(path_to_dataset_from_project_root, batch_sizes_per_classes=
                         {'0': 300, '1': 300, '2': 300, '3': 300, '4': 300, '5': 300, '6': 300, '7': 300, '8': 300, '9': 300},

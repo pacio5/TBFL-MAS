@@ -273,17 +273,23 @@ class TestLearningMetricsModels(unittest.TestCase):
 
             Metrics.calculate_recalls_per_classes(all_labels, all_predictions, i + 1, recalls_per_classes)
 
+        # store the metrics
         Metrics.store_metrics(agent_name, all_test_accuracies, all_test_f1_scores, all_test_precisions,
                               all_test_recalls,
                               all_testing_losses, all_training_losses, args, batch_sizes_per_classes,
                               f1_scores_per_classes,
                               precisions_per_classes, recalls_per_classes)
 
+        # assert that result file exists
         path = str(Paths.get_project_root()) + "\\Results\\" + agent_name + ".json"
         self.assertTrue(os.path.exists(path))
 
+        # assert that plot works
+        ML = {"learning_scenarios": ["ML"], "title": "ML"}
+        acc = {"metrics": ["test_acc"], "xlabel": "global epochs",
+               "ylabel": "accuracy score", "title": "total accuracy scores", "kind": "line"}
         mock_plt = mock.MagicMock()
-        Metrics.plot_metrics(args, "test", "test", "ML", "acc", mock_plt)
+        Metrics.plot_metrics(args, "test", "test", ML, acc, mock_plt)
         mock_plt.show.assert_called_once()
 
     def test_average_weights(self):
