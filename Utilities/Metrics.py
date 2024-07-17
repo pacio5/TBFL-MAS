@@ -153,5 +153,6 @@ class Metrics:
             metrics[key + ", pre_cla" + str(i)] = precisions_per_classes[str(i)]
             metrics[key + ", rec_cla" + str(i)] = recalls_per_classes[str(i)]
 
-        with open(path, "w") as metrics_file:
+        os.makedirs(str(Paths.get_project_root()) + "\\Results", exist_ok=True)
+        with open(path, mode="w") as metrics_file:
             json.dump(metrics, metrics_file)
