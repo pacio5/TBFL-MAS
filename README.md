@@ -15,8 +15,13 @@ This is configured in the Argparser.py in folder Utilities.
 ## Example run
 The argument launch_config takes a list of string for defining the learning scenarios.
 Here in an example for the learning scenarios FedAvg and FedSGD:
+```
 {path to python exe}\python.exe {path to main.py}\main.py --launch_config FedAvg FedSGD
+```
 
 ## Plot
-The pictures can be plotted by the plot.py file.
-Depending on which posts you want to see, you have to adjust the plot function.
+All learning scenarios from 1 to 14 can be plotted by the plot.py file.
+If one wants to see something else, one needs to adjust the plot function.
+```
+{path to python exe}\python.exe {path to plot.py}\plot.py
+```

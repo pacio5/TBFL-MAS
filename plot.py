@@ -1,3 +1,5 @@
+import time
+
 from Utilities.Argparser import Argparser
 from Utilities.Metrics import Metrics
 
@@ -44,31 +46,17 @@ def plot():
     learning_scenario_2_3_12_13 = {
         "learning_scenarios": ["FedAvg", "FedAvg high noises", "FedPER", "FedPER high noises"],
         "title": "comparison of algorithms of handling noises: "}
-    learning_scenario_8_11_14 = {"learning_scenarios": ["FedAvg non-IID", "FedSGD non-IID", "FedPER non-IID"],
-                                "title": "comparison of algorithms of handling non-IID data: "}
     FedAvg = {"learning_scenarios": ["FedAvg non-IID"],
                                  "title": "FedAvg on handling non-IID data: "}
-    FedAvg_10_agents = {"learning_scenarios": ["FedAvg non-IID clients=10"],
-              "title": "FedAvg on handling non-IID data with 10 agents: "}
     FedSGD = {"learning_scenarios": ["FedSGD non-IID"],
                                  "title": "FedSGD on handling non-IID data: "}
     FedPER = {"learning_scenarios": ["FedPER non-IID"],
                                  "title": "FedPER on handling non-IID data: "}
 
-    # agents
     filter_agents = ["server", "client0", "client1", "client2", "client3", "client4"]
 
     # plot metrics with different metrics and learning scenarios
-    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(9)])
     Metrics.plot_metrics(args, "", "server", learning_scenario_1_2_10_12, test)
-    Metrics.plot_metrics(args, "", "server", learning_scenario_8_9,  f1_cla["2"])
-    Metrics.plot_metrics(args, "", "server", learning_scenario_2_4_5, acc)
-    Metrics.plot_metrics(args, "", "client0", learning_scenario_2_4_5, acc)
-    Metrics.plot_metrics(args, "", "client_", learning_scenario_2_4_5, acc)
-    Metrics.plot_metrics(args, "", "", learning_scenario_2_4_5, acc)
-    Metrics.plot_metrics(args, "", "server", learning_scenario_2_6_7, acc)
-    Metrics.plot_metrics(args, "", "server", learning_scenario_2_3_12_13, acc)
-    Metrics.plot_metrics(args, "", "server", learning_scenario_2_3_12_13, loss)
     Metrics.plot_metrics(args, "", "server",
                          {"learning_scenarios": ["ML"],
                           "title": "ML: "}, test)
@@ -81,6 +69,29 @@ def plot():
     Metrics.plot_metrics(args, "", "server",
                          {"learning_scenarios": ["FedPER"],
                           "title": "FedPER: "}, test)
+    Metrics.plot_metrics(args, "", "",
+                         {"learning_scenarios": ["FedPER"],
+                          "title": "FedPER: "}, test)
+
+    Metrics.plot_metrics(args, "", "", learning_scenario_2_4_5, acc)
+    Metrics.plot_metrics(args, "", "client0", learning_scenario_2_4_5, acc)
+
+    Metrics.plot_metrics(args, "", "server", learning_scenario_2_6_7, acc)
+
+    Metrics.plot_metrics(args, "", "server", learning_scenario_2_3_12_13, acc)
+    Metrics.plot_metrics(args, "", "server", learning_scenario_2_3_12_13, loss)
+
+    for agent in filter_agents:
+        Metrics.plot_metrics(args, "", agent, FedAvg, f1)
+        Metrics.plot_metrics(args, "", agent, FedSGD, f1)
+        Metrics.plot_metrics(args, "", agent, FedPER, f1)
+        time.sleep(5)
+
+    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(2)])
+    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(3)])
+    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(6)])
+    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(7)])
+    Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(9)])
 
 if __name__ == "__main__":
     plot()
