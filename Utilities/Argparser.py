@@ -41,9 +41,8 @@ class Argparser():
 
         parser.add_argument('--jid_server', type=str, default=config["default"]["jid_server"])
 
-        parser.add_argument('--launch_config', type=list,
-                            default=list(launch_conf.values()),
-                            help="launch configuration")
+        parser.add_argument('--launch_config', nargs='*', default=list(launch_conf.values())[0],
+                            help="list of strings for defining the learning scenarios")
 
         parser.add_argument('--learning_rate', type=float, default=config["default"]["learning_rate"],
                             help='learning rate')

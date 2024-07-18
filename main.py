@@ -80,11 +80,10 @@ async def multiple_mains():
     learning_scenarios_conf = yaml.load(open(path_to_learning_scenarios_config), Loader=yaml.FullLoader)
 
     # run every configuration that is defined to run in the launch_config
-    for learning_scenarios in args.launch_config:
-        for learning_scenario in learning_scenarios:
-            print("This run uses the learning scenario {}".format(learning_scenario))
-            await main(launch_config=learning_scenarios_conf["learning_scenarios"][learning_scenario])
-            print(learning_scenario + " is done")
+    for learning_scenario in args.launch_config:
+        print("This run uses the learning scenario {}".format(learning_scenario))
+        await main(launch_config=learning_scenarios_conf["learning_scenarios"][learning_scenario])
+        print(learning_scenario + " is done")
 
 if __name__ == "__main__":
     spade.run(multiple_mains())

@@ -21,7 +21,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(3, args.global_epochs)
         self.assertEqual(1, args.iid)
         self.assertEqual("server@localhost", args.jid_server)
-        self.assertEqual(list(launch_conf.values()), args.launch_config)
+        self.assertEqual(list(launch_conf.values())[0], args.launch_config)
         self.assertEqual(0.01, args.learning_rate)
         self.assertEqual(5, args.local_epochs)
         self.assertEqual("no changes", args.new_entry_or_leave)
