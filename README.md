@@ -15,7 +15,7 @@ This is configured in the Argparser.py in folder Utilities.
 ### example run configuration
 The argument launch_config takes a list of string for defining the learning scenarios.
 Here in an example for the learning scenarios FedAvg and FedSGD:
-main.py --launch_config FedAvg FedSGD
+{path to python exe}\python.exe {path to main.py}\main.py --launch_config FedAvg FedSGD
 
 ## Run program
 The program can be run from main.py.
