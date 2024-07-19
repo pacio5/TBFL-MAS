@@ -85,7 +85,7 @@ def plot():
         Metrics.plot_metrics(args, "", agent, FedAvg, f1)
         Metrics.plot_metrics(args, "", agent, FedSGD, f1)
         Metrics.plot_metrics(args, "", agent, FedPER, f1)
-        time.sleep(5)
+        time.sleep(10)
 
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(2)])
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(3)])
@@ -93,5 +93,19 @@ def plot():
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(7)])
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(9)])
 
+def single_plot():
+    args = Argparser.args_parser()
+    learning_scenario = {"learning_scenarios": args.learning_scenarios_to_plot,
+                                   "title": args.title_learning_scenario_to_plot}
+    metric = {"metrics": args.metrics_to_plot, "xlabel":args.xlabel_to_plot,
+            "ylabel": args.ylabel_to_plot, "title": args.title_metrics_to_plot, "kind": "line"}
+    Metrics.plot_metrics(args, "", args.agents_to_plot, learning_scenario, metric)
+
+
+
 if __name__ == "__main__":
-    plot()
+    args = Argparser.args_parser()
+    if args.plot_mode == 0:
+        plot()
+    else:
+        single_plot()

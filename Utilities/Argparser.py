@@ -10,6 +10,9 @@ class Argparser():
         parser = argparse.ArgumentParser()
 
         # add parsers
+        parser.add_argument('--agents_to_plot', type=str, default="",
+                            help="filter agents for plotting")
+
         parser.add_argument('--algorithm', type=str, choices=config["options"]["algorithm"],
                             default=config["default"]["algorithm"],
                             help="algorithm that is used for learning, default is FedAvg")
@@ -39,16 +42,23 @@ class Argparser():
         parser.add_argument('--iid', type=int, choices=config["options"]["iid"], default=config["default"]["iid"],
                             help="default is IID, change the value to 0 for non-IID")
 
-        parser.add_argument('--jid_server', type=str, default=config["default"]["jid_server"])
+        parser.add_argument('--jid_server', type=str, default=config["default"]["jid_server"],
+                            help="address where jid server is")
+
+        parser.add_argument('--learning_scenarios_to_plot', nargs='*', default=["FedAvg"],
+                            help="list of strings for defining the learning scenarios for plotting")
 
         parser.add_argument('--launch_config', nargs='*', default=list(launch_conf.values())[0],
-                            help="list of strings for defining the learning scenarios")
+                            help="list of strings for defining the learning scenarios for running")
 
         parser.add_argument('--learning_rate', type=float, default=config["default"]["learning_rate"],
                             help='learning rate')
 
         parser.add_argument('--local_epochs', type=int, default=config["default"]["local_epochs"],
                             help="the number of local epochs")
+
+        parser.add_argument('--metrics_to_plot', nargs='*', default=["test_acc"],
+                            help="list of strings for defining the metrics")
 
         parser.add_argument('--new_entry_or_leave', type=str,
                             choices=config["options"]["new_entry_or_leave"],
@@ -62,9 +72,18 @@ class Argparser():
                             default=config["default"]["number_of_classes_in_dataset"],
                             help="number of classes in dataset")
 
+        parser.add_argument('--plot_mode', type=int, default=0,
+                            help="defines the mode of plotting, 0 for plot all comparisons, 1 for customizable plot")
+
         parser.add_argument('--standard_deviation_for_noises', type=float,
                             default=config["default"]["standard_deviation_for_noises"],
                             help="standard deviation for noises")
+
+        parser.add_argument('--title_learning_scenario_to_plot', type=str, default="FedAvg: ",
+                            help="title for learning scenarios for plot")
+
+        parser.add_argument('--title_metrics_to_plot', type=str, default="accuracy",
+                            help="title for metrics for plot")
 
         parser.add_argument('--wait_until_threshold_is_reached', type=str,
                             choices=config["options"]["wait_until_threshold_is_reached"],
@@ -73,6 +92,12 @@ class Argparser():
 
         parser.add_argument('--threshold', type=float, default=config["default"]["threshold"],
                             help="threshold needed to reach before learning ends")
+
+        parser.add_argument('--xlabel_to_plot', type=str, default="global epochs",
+                            help="x label for plot")
+
+        parser.add_argument('--ylabel_to_plot', type=str, default="accuracy",
+                            help="y label for plot")
 
         args = parser.parse_args()
 
