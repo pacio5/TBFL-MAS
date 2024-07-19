@@ -29,7 +29,7 @@ If you want to customize a plot, you have to set the argument plot_mode to one.
 ```
 {path to python exe}\python.exe {path to plot.py}\plot.py --plot_mode 1
 ```
-An example of a customized plot:
+An example of plotting a customized plot:
 ```
 {path to python exe}\python.exe {path to plot.py}\plot.py --plot_mode 1 --learning_scenarios_to_plot FedSGD --title_learning_scenario_to_plot FedSGD: --metrics_to_plot test_f1 --title_metrics_to_plot f1 --ylabel_to_plot f1-score 
 ```
