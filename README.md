@@ -20,8 +20,8 @@ Here in an example for the learning scenarios FedAvg and FedSGD:
 ```
 
 ## Plot
-All learning scenarios from 1 to 14 can be plotted by the plot.py file.
-If one wants to see something else, one needs to adjust the plot function.
+All comparisons of the foureen learning scenarios can be plotted by the plot.py file.
+If one who wants to see something else, one needs to adjust the plot function.
 ```
 {path to python exe}\python.exe {path to plot.py}\plot.py
 ```
