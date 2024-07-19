@@ -1,10 +1,10 @@
 import time
-
 from Utilities.Argparser import Argparser
 from Utilities.Metrics import Metrics
 
-# plot the metrics for different learning scenarios
-def plot():
+
+# plot comparisons for different learning scenarios
+def plot_comparisons_of_learning_scenarios():
     args = Argparser.args_parser()
 
     # different metrics
@@ -15,7 +15,7 @@ def plot():
     test = {"metrics": ["test_acc", "test_f1", "test_pre"], "xlabel": "global epochs",
             "ylabel": "score", "title": "total scores", "kind": "line"}
     f1 = {"metrics": [], "xlabel": "global epochs", "ylabel": "f1-score",
-         "title": "f1-scores per classes", "kind": "line"}
+          "title": "f1-scores per classes", "kind": "line"}
     f1_cla = {}
     pre_cla = {}
     rec_cla = {}
@@ -28,8 +28,9 @@ def plot():
                            "title": "precision scores per class " + str(i), "kind": "line"}
         rec_cla[str(i)] = {"metrics": ["rec_cla" + str(i)], "xlabel": "global epochs", "ylabel": "recall score",
                            "title": "recall scores per class " + str(i), "kind": "line"}
-        cla[str(i)] = {"metrics": ["f1_cla" + str(i), "pre_cla" + str(i), "rec_cla" + str(i)], "xlabel": "global epochs",
-                       "ylabel": "score", "title": "scores per class " + str(i), "kind": "line"}
+        cla[str(i)] = {"metrics": ["f1_cla" + str(i), "pre_cla" + str(i), "rec_cla" + str(i)],
+                       "xlabel": "global epochs", "ylabel": "score", "title": "scores per class " + str(i),
+                       "kind": "line"}
 
     # different learning scenarios
     learning_scenario_1_2_10_12 = {"learning_scenarios": ["ML", "FedAvg", "FedSGD", "FedPER"],
@@ -46,12 +47,12 @@ def plot():
     learning_scenario_2_3_12_13 = {
         "learning_scenarios": ["FedAvg", "FedAvg high noises", "FedPER", "FedPER high noises"],
         "title": "comparison of algorithms of handling noises: "}
-    FedAvg = {"learning_scenarios": ["FedAvg non-IID"],
-                                 "title": "FedAvg on handling non-IID data: "}
-    FedSGD = {"learning_scenarios": ["FedSGD non-IID"],
-                                 "title": "FedSGD on handling non-IID data: "}
-    FedPER = {"learning_scenarios": ["FedPER non-IID"],
-                                 "title": "FedPER on handling non-IID data: "}
+    fedavg = {"learning_scenarios": ["FedAvg non-IID"],
+              "title": "FedAvg on handling non-IID data: "}
+    fedsgd = {"learning_scenarios": ["FedSGD non-IID"],
+              "title": "FedSGD on handling non-IID data: "}
+    fedper = {"learning_scenarios": ["FedPER non-IID"],
+              "title": "FedPER on handling non-IID data: "}
 
     filter_agents = ["server", "client0", "client1", "client2", "client3", "client4"]
 
@@ -82,9 +83,9 @@ def plot():
     Metrics.plot_metrics(args, "", "server", learning_scenario_2_3_12_13, loss)
 
     for agent in filter_agents:
-        Metrics.plot_metrics(args, "", agent, FedAvg, f1)
-        Metrics.plot_metrics(args, "", agent, FedSGD, f1)
-        Metrics.plot_metrics(args, "", agent, FedPER, f1)
+        Metrics.plot_metrics(args, "", agent, fedavg, f1)
+        Metrics.plot_metrics(args, "", agent, fedsgd, f1)
+        Metrics.plot_metrics(args, "", agent, fedper, f1)
         time.sleep(10)
 
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(2)])
@@ -93,19 +94,20 @@ def plot():
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(7)])
     Metrics.plot_metrics(args, "", "", learning_scenario_8_9, f1_cla[str(9)])
 
-def single_plot():
+
+# plot customizable plot
+def customizable_plot():
     args = Argparser.args_parser()
     learning_scenario = {"learning_scenarios": args.learning_scenarios_to_plot,
-                                   "title": args.title_learning_scenario_to_plot}
-    metric = {"metrics": args.metrics_to_plot, "xlabel":args.xlabel_to_plot,
-            "ylabel": args.ylabel_to_plot, "title": args.title_metrics_to_plot, "kind": "line"}
+                         "title": args.title_learning_scenario_to_plot}
+    metric = {"metrics": args.metrics_to_plot, "xlabel": args.xlabel_to_plot,
+              "ylabel": args.ylabel_to_plot, "title": args.title_metrics_to_plot, "kind": "line"}
     Metrics.plot_metrics(args, "", args.agents_to_plot, learning_scenario, metric)
-
 
 
 if __name__ == "__main__":
     args = Argparser.args_parser()
     if args.plot_mode == 0:
-        plot()
+        plot_comparisons_of_learning_scenarios()
     else:
-        single_plot()
+        customizable_plot()
