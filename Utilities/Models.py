@@ -13,6 +13,7 @@ class CNN(nn.Module):
         self.fc1 = nn.Sequential(nn.Linear(in_features=6272, out_features=1028), nn.ReLU())
         self.fc2 = nn.Linear(in_features=1028, out_features=num_classes)
 
+    
     def forward(self, x):
         x = self.conv1(x)
         x = self.pool1(x)
@@ -43,6 +44,7 @@ class PersonalCNN(nn.Module):
 
         self.fc2 = nn.Linear(in_features=1028, out_features=num_classes)
 
+    
     def forward(self, x):
         x = self.conv1(x)
         x = self.pool1(x)

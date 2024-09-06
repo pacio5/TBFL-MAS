@@ -1,12 +1,16 @@
 import argparse
+import os
+
 from Utilities.Paths import config, Paths
 import yaml
 
 class Argparser():
     @staticmethod
     def args_parser():
-        path_to_launch_config = str(Paths.get_project_root()) + "\\Configuration\\launch_config.yml"
-        launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
+        path_to_launch_config = os.path.join(str(Paths.get_project_root()), "Configuration", "launch_config.yml")
+        #launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
+        with open(path_to_launch_config, 'r') as file:
+            launch_conf = yaml.load(file, Loader=yaml.FullLoader)
         parser = argparse.ArgumentParser()
 
         # add parsers
@@ -27,10 +31,10 @@ class Argparser():
                             default=config["default"]["batch_size_training"],
                             help="batch size that is used for training")
 
-        parser.add_argument('--dataset_testing', type=str, default=config["default"]["dataset_testing"],
+        parser.add_argument('--dataset_testing', type=str, default=os.path.join(*tuple(config["default"]["dataset_testing"])),
                             help="path to testing data set")
 
-        parser.add_argument('--dataset_training', type=str, default=config["default"]["dataset_training"],
+        parser.add_argument('--dataset_training', type=str, default=os.path.join(*tuple(config["default"]["dataset_training"])),
                             help="path to testing data set")
 
         parser.add_argument('--epoch', type=int, default=1,

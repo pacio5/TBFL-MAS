@@ -1,5 +1,4 @@
 import asyncio
-import ast
 import codecs
 from datetime import timedelta
 import logging
@@ -17,7 +16,6 @@ from Utilities.Models import CNN
 from Utilities.Paths import config
 
 fsm_logger = logging.getLogger("FSM")
-
 
 class SetUpState(State):
     async def run(self):
@@ -255,6 +253,9 @@ class AvgState(State):
         print("-    The agent " + self.agent.name + "  averages at the epoch " + str(self.agent.args.epoch))
         time.sleep(1)
 
+
+        print("Epoch updates: ", epoch_updates)
+
         if self.agent.args.algorithm == "FedSGD":
             # average gradients and make gradient descent step
             Learning.average_gradients(avg, epoch_updates)
@@ -267,6 +268,7 @@ class AvgState(State):
             model.load_state_dict(avg["weights"])
 
         # average and save losses globallyPredict
+        # TODO: implement here the GP aggregation method for the losses and the weights (FedGP or FedAVG)
         all_training_losses[str(self.agent.args.epoch)] = sum(losses.values()) / len(losses)
         self.set("all_training_losses", all_training_losses)
 

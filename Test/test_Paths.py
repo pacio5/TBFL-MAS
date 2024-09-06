@@ -11,7 +11,6 @@ class TestPaths(unittest.TestCase):
 
         # assert if project root is correctly given by the function from different directories
         self.assertEqual(project_root, Paths.get_project_root())
-        os.chdir("..")
         self.assertEqual(project_root, Paths.get_project_root())
         os.chdir("Behaviours")
         self.assertEqual(project_root, Paths.get_project_root())

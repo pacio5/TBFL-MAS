@@ -1,4 +1,3 @@
-from aioxmpp import PresenceShow
 import logging
 from spade.behaviour import OneShotBehaviour
 

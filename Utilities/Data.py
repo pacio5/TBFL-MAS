@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 from Utilities.Paths import Paths
@@ -26,7 +28,7 @@ class Data():
         if local_epochs <= 0:
             local_epochs = 1
 
-        dataframe = pd.read_csv(str(Paths.get_project_root()) + path_to_dataset_from_project_root)
+        dataframe = pd.read_csv(os.path.join(str(Paths.get_project_root()), path_to_dataset_from_project_root))
 
         x_test = {}
         y_test = {}

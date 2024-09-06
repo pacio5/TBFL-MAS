@@ -22,8 +22,12 @@ default:
   algorithm: "ML"
   batch_size_testing: 300
   batch_size_training: 300
-  dataset_testing: "\\fashion dataset\\fashion-mnist_test.csv"
-  dataset_training: "\\fashion dataset\\fashion-mnist_train.csv"
+  dataset_testing:
+    - "fashion-dataset"
+    - "fashion-mnist_test.csv"
+  dataset_training:
+    - "fashion-dataset"
+    - "fashion-mnist_train.csv"
   global_epochs: 3
   iid: 1
   jid_server: "server@localhost"

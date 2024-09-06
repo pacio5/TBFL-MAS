@@ -1,3 +1,6 @@
+import os
+from unittest.mock import patch
+
 from Utilities.Argparser import Argparser
 from Utilities.Paths import Paths
 import unittest
@@ -5,19 +8,22 @@ import yaml
 
 
 class TestParser(unittest.TestCase):
+    @patch('sys.argv', ['test_data.py', '--batch_size_testing', '300'])
     def test_parser(self):
         # set variable
         args = Argparser.args_parser()
-        path_to_launch_config = str(Paths.get_project_root()) + "\\Configuration\\launch_config.yml"
-        launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
+        path_to_launch_config = str(os.path.join(Paths.get_project_root(),"Configuration", "launch_config.yml"))
+        #launch_conf = yaml.load(open(path_to_launch_config), Loader=yaml.FullLoader)
+        with open(path_to_launch_config, 'r') as file:
+            launch_conf = yaml.load(file, Loader=yaml.FullLoader)
 
         # assert default values
         self.assertEqual("", args.agents_to_plot)
         self.assertEqual("ML", args.algorithm)
         self.assertEqual(300, args.batch_size_training)
         self.assertEqual(300, args.batch_size_testing)
-        self.assertEqual("\\fashion dataset\\fashion-mnist_test.csv", args.dataset_testing)
-        self.assertEqual("\\fashion dataset\\fashion-mnist_train.csv", args.dataset_training)
+        self.assertEqual(os.path.join("fashion-dataset", "fashion-mnist_test.csv"), args.dataset_testing)
+        self.assertEqual(os.path.join("fashion-dataset", "fashion-mnist_train.csv"), args.dataset_training)
         self.assertEqual(1, args.epoch)
         self.assertEqual(3, args.global_epochs)
         self.assertEqual(1, args.iid)

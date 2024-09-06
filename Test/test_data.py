@@ -1,14 +1,19 @@
+import os
+import sys
+import numpy as np
+import unittest
+from unittest.mock import patch
 from Utilities.Argparser import Argparser
 from Utilities.Data import Data
-import numpy as np
 from Utilities.Paths import config
-import unittest
 
 
 class TestData(unittest.TestCase):
+    @patch('sys.argv', ['test_data.py', '--batch_size_testing', '300'])
     def test_prepare_batch_size_per_classes(self):
         # set variables
         args = Argparser.args_parser()
+
         batch_size_per_classes = {}
         batch_size_options = config["options"]["batch_size_per_class"]
 
@@ -24,7 +29,7 @@ class TestData(unittest.TestCase):
 
     def test_prepare_dataset(self):
         # set variables
-        path_to_dataset_form_project_root = "\\fashion dataset\\fashion-mnist_test.csv"
+        path_to_dataset_form_project_root = os.path.join("fashion-dataset", "fashion-mnist_test.csv")
         batch_sizes = {'3': 10, '9': 10, '2': 20}
         classes = [2, 3, 9]
         batch_size = 40
@@ -76,4 +81,5 @@ class TestData(unittest.TestCase):
             self.assertEqual(y_labels[i].tolist(), y_original_labels[i].tolist())
 
 if __name__ == "__main__":
+    sys.argv = sys.argv[:1]
     unittest.main()

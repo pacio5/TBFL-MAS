@@ -1,18 +1,17 @@
-import asyncio
+from unittest.mock import patch
+
 import loggingtestcase
 from loggingtestcase import DisplayLogs
 from main import main
 from Utilities.Paths import config
 import spade
-import time
 import traceback
 import unittest
-from Utilities.Paths import Paths
-import yaml
 
 
 class TestFSM(unittest.TestCase):
     @loggingtestcase.capturelogs('FSM', level='INFO', display_logs=DisplayLogs.ALWAYS)
+    @patch('sys.argv', ['test_data.py', '--batch_size_testing', '300'])
     def test_creation_and_fsm_behaviour(self, logs):
         # define configuration
         fedavg = {"algorithm": "FedAvg", "global_epoch": 1, "number_of_client_agents": 1}

@@ -8,6 +8,7 @@ from Utilities.Paths import config, Paths
 import spade
 import uuid
 import yaml
+import os
 
 fsm_logger = logging.getLogger("FSM")
 agents = {}
@@ -15,18 +16,26 @@ agents = {}
 
 # run FL-MAS with one configuration
 async def main(launch_config={}):
+    """
+    Run the main function with one configuration, that is passed as parameter
+    :param launch_config: dictionary with the configuration to run (e.g. FedAvg)
+    :return:
+    """
+
     # set variables
     args = Argparser.args_parser()
     batch_size_options = config["options"]["batch_size_per_class"]
 
-    # update configuration
+    # Create a dictionary with the configuration
     opt = vars(args)
+    # update launch configuration
     opt.update(launch_config)
 
     # create server agent
     batch_size_per_classes_server = {}
     Data.prepare_batch_sizes_per_classes(args, batch_size_options,
                                     batch_size_per_classes_server, 100)
+    # TODO: move password to .ENV
     server = ServerAgent(args.jid_server, "server", args,
                          batch_size_per_classes_server, 100, 200)
     agents["server"] = server
@@ -41,6 +50,7 @@ async def main(launch_config={}):
             Data.prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, i * 13)
             # name_of_client = "client_" + str(uuid.uuid4())[:6]
             name_of_client = "client" + str(i)
+            # TODO: only work on localhost
             agent = ClientAgent(name_of_client + "@localhost", name_of_client, args,
                                 batch_size_per_classes, i * 7, i * 9)
             agents[name_of_client] = agent
@@ -56,6 +66,7 @@ async def main(launch_config={}):
                 batch_size_per_classes = {}
                 Data.prepare_batch_sizes_per_classes(args, batch_size_options, batch_size_per_classes, 20)
                 name_of_client = "client_" + str(uuid.uuid4())[:6]
+                # TODO: only works on localhost, we should make it work on any server.
                 agent = ClientAgent(name_of_client + "@localhost", name_of_client, args,
                                     batch_size_per_classes, 20, 30)
                 agents[name_of_client] = agent
@@ -69,21 +80,26 @@ async def main(launch_config={}):
                 fsm_logger.info("client0 leaves the MAS")
                 first = False
         except KeyboardInterrupt:
+            # TODO: we should handle exceptions
             break
 
 
 # run FL-MAS multiple times with different configuration
 async def multiple_mains():
+    """
+    Run the main function multiple times with different configurations
+    """
     # set variables
     args = Argparser.args_parser()
-    path_to_learning_scenarios_config = str(Paths.get_project_root()) + "\\Configuration\\learning_scenarios_config.yml"
+    path_to_learning_scenarios_config = str(os.path.join(Paths.get_project_root(), "Configuration",
+                                                     "learning_scenarios_config.yml"))
     learning_scenarios_conf = yaml.load(open(path_to_learning_scenarios_config), Loader=yaml.FullLoader)
-
     # run every configuration that is defined to run in the launch_config
     for learning_scenario in args.launch_config:
         print("This run uses the learning scenario {}".format(learning_scenario))
         await main(launch_config=learning_scenarios_conf["learning_scenarios"][learning_scenario])
         print(learning_scenario + " is done")
+
 
 if __name__ == "__main__":
     spade.run(multiple_mains())
