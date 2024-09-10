@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  prosody:
+    build:
+      context: .
+      dockerfile: Dockerfile.prosody
+    container_name: prosody_xmpp
+    ports:
+      - "5222:5222"
+    network_mode: host
+    restart: unless-stopped
+
+  fl-mas:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: fl_mas_container
+    network_mode: host
+    volumes:
+      - /home/red_OMR/TBFL-MAS/exec_results:/app/Results
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    depends_on:
+      - prosody
+    command: >
+      time python main.py --launch_config FedAvg

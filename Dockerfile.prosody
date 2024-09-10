@@ -1,0 +1,25 @@
+FROM prosody/prosody:latest
+
+LABEL maintainer="Elia Pacioni"
+
+RUN openssl req -new -x509 -days 365 -nodes \
+    -subj "/C=IT/ST=Italy/L=Rome/O=MyOrg/OU=IT/CN=localhost" \
+    -out /etc/prosody/certs/localhost.crt \
+    -keyout /etc/prosody/certs/localhost.key
+
+RUN chown prosody:prosody /etc/prosody/certs/localhost.key /etc/prosody/certs/localhost.crt \
+    && chmod 600 /etc/prosody/certs/localhost.key /etc/prosody/certs/localhost.crt
+
+RUN echo "VirtualHost \"localhost\"" >> /etc/prosody/prosody.cfg.lua && \
+    echo "    ssl = {" >> /etc/prosody/prosody.cfg.lua && \
+    echo "        key = \"/etc/prosody/certs/localhost.key\";" >> /etc/prosody/prosody.cfg.lua && \
+    echo "        certificate = \"/etc/prosody/certs/localhost.crt\";" >> /etc/prosody/prosody.cfg.lua && \
+    echo "    }" >> /etc/prosody/prosody.cfg.lua && \
+    echo "c2s_require_encryption = true" >> /etc/prosody/prosody.cfg.lua && \
+    echo "s2s_require_encryption = true" >> /etc/prosody/prosody.cfg.lua && \
+    echo "allow_registration = true" >> /etc/prosody/prosody.cfg.lua && \
+    echo "modules_enabled = { \"register\" }" >> /etc/prosody/prosody.cfg.lua
+
+EXPOSE 5222
+
+CMD ["prosody", "-F"]

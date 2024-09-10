@@ -1,0 +1,20 @@
+FROM nvcr.io/nvidia/pytorch:24.08-py3
+
+LABEL authors="Elia Pacioni"
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y time
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+COPY Agents/ Agents/
+COPY Behaviours/ Behaviours/
+COPY Configuration/ Configuration/
+COPY fashion-dataset/ fashion-dataset/
+COPY States/ States/
+COPY Utilities/ Utilities/
+COPY main.py .
+COPY __init__.py .
